@@ -1,7 +1,7 @@
 GSL: Guideline Support Library [![Build Status](https://travis-ci.org/Microsoft/GSL.svg?branch=master)](https://travis-ci.org/Microsoft/GSL) [![Build status](https://ci.appveyor.com/api/projects/status/github/Microsoft/GSL?svg=true)](https://ci.appveyor.com/project/neilmacintosh/GSL)
 =================================
 
-# viboes fork
+# viboes/GSL fork
 
 This is a fork of the GSL LIbrary, ported to C++11 compilers.
 
