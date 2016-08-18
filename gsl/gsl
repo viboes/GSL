@@ -19,6 +19,9 @@
 #ifndef GSL_GSL_H
 #define GSL_GSL_H
 
+#include "gsl_config.hpp"
+#include "stdex/type_traits.hpp"
+
 #include "gsl_assert"  // Ensures/Expects
 #include "gsl_util"    // finally()/narrow()/narrow_cast()...
 #include "multi_span"  // multi_span, strided_span...
@@ -89,13 +92,13 @@ public:
     not_null(const not_null& other) = default;
     not_null& operator=(const not_null& other) = default;
 
-    template <typename U, typename Dummy = std::enable_if_t<std::is_convertible<U, T>::value>>
+    template <typename U, typename Dummy = stdex::enable_if_t<std::is_convertible<U, T>::value>>
     not_null(const not_null<U>& other)
     {
         *this = other;
     }
 
-    template <typename U, typename Dummy = std::enable_if_t<std::is_convertible<U, T>::value>>
+    template <typename U, typename Dummy = stdex::enable_if_t<std::is_convertible<U, T>::value>>
     not_null& operator=(const not_null<U>& other)
     {
         ptr_ = other.get();

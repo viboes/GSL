@@ -1,4 +1,22 @@
-# GSL: Guideline Support Library [![Build Status](https://travis-ci.org/Microsoft/GSL.svg?branch=master)](https://travis-ci.org/Microsoft/GSL) [![Build status](https://ci.appveyor.com/api/projects/status/github/Microsoft/GSL?svg=true)](https://ci.appveyor.com/project/neilmacintosh/GSL)
+GSL: Guideline Support Library [![Build Status](https://travis-ci.org/Microsoft/GSL.svg?branch=master)](https://travis-ci.org/Microsoft/GSL) [![Build status](https://ci.appveyor.com/api/projects/status/github/Microsoft/GSL?svg=true)](https://ci.appveyor.com/project/neilmacintosh/GSL)
+=================================
+
+# viboes fork
+
+This is a fork of the GSL LIbrary, to make it compile for C++11 compilers.
+
+Note that the CMakeList.txt needs to be adapted yet so that you will need to hack them  :(
+
+The fork add a gsl_config.hpp file to manage with C++14 constexpr and the definition in stdex of some C++14 library missing in C++11.
+
+The GSL sources have been modified taking in account the consytexpr macro and the stdex features.
+
+THe C++11 tests have been run on:
+
+* OS X El Capitan using CLANG-3.7.0
+* OS X El Capitan using GCC-5.2.0  
+
+# Microsoft/GSL
 
 The Guideline Support Library (GSL) contains functions and types that are suggested for use by the
 [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines) maintained by the [Standard C++ Foundation](https://isocpp.org).
@@ -82,3 +100,6 @@ GCC/clang
 Include the library using:
 
     #include <gsl/gsl>
+
+
+    

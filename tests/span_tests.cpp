@@ -17,6 +17,8 @@
 #include <UnitTest++/UnitTest++.h>
 #include <gsl/span>
 
+#include "../gsl/stdex/iterator.hpp"
+
 #include <iostream>
 #include <list>
 #include <map>
@@ -149,7 +151,7 @@ SUITE(span_tests)
 
         {
             auto workaround_macro = []() { span<int, 1> s{ nullptr, static_cast<span<int>::index_type>(0) }; };
-            CHECK_THROW(workaround_macro(), fail_fast); 
+            CHECK_THROW(workaround_macro(), fail_fast);
         }
 
         {
@@ -902,7 +904,7 @@ SUITE(span_tests)
             CHECK(beyond - first == 4);
             CHECK(first - first == 0);
             CHECK(beyond - beyond == 0);
-            
+
             ++it;
             CHECK(it - first == 1);
             CHECK(*it == 2);
@@ -935,11 +937,11 @@ SUITE(span_tests)
             span<int> s = a;
 
             span<int>::const_iterator cit = s.cbegin();
-            span<int>::const_iterator cit2 = std::cbegin(s);
+            span<int>::const_iterator cit2 = stdex::cbegin(s);
             CHECK(cit == cit2);
 
             cit = s.cend();
-            cit2 = std::cend(s);
+            cit2 = stdex::cend(s);
             CHECK(cit == cit2);
         }
 
@@ -1319,7 +1321,7 @@ SUITE(span_tests)
             auto f = [&]() {
                 span<int, 4> s4 = {arr2, 2};
                 static_cast<void>(s4);
-            };                     
+            };
             CHECK_THROW(f(), fail_fast);
         }
 
@@ -1327,7 +1329,7 @@ SUITE(span_tests)
         span<int> av = arr2;
         auto f = [&]() {
             span<int, 4> s4 = av;
-            static_cast<void>(s4);            
+            static_cast<void>(s4);
         };
         CHECK_THROW(f(), fail_fast);
     }

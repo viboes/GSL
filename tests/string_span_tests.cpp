@@ -122,7 +122,7 @@ SUITE(string_span_tests)
 
             // comparison to empty span
             CHECK(span1 != span);
-            CHECK(span != span1);      
+            CHECK(span != span1);
         }
 
         {
@@ -279,7 +279,7 @@ SUITE(string_span_tests)
             string_span<> _span{ _ptr, 5 };
 
             // non-const span, non-const other type
-            
+
             CHECK(_span == _ar);
             CHECK(_span == _ar1);
             CHECK(_span == _ar2);
