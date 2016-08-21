@@ -265,11 +265,11 @@ public:
 #endif
 
     // assign
-    GSL_CXX14_CONSTEXPR basic_string_span& operator=(const basic_string_span& other) noexcept = default;
+    GSL_DEFAULT_CONSTEXPR basic_string_span& operator=(const basic_string_span& other) noexcept = default;
 
 // move assign
 #ifndef GSL_MSVC_NO_DEFAULT_MOVE_CTOR
-    GSL_CXX14_CONSTEXPR basic_string_span& operator=(basic_string_span&& other) noexcept = default;
+    GSL_DEFAULT_CONSTEXPR basic_string_span& operator=(basic_string_span&& other) noexcept = default;
 #else
     constexpr basic_string_span& operator=(basic_string_span&& other) noexcept
     {
@@ -483,7 +483,7 @@ public:
     using impl_type = span<value_type, Extent>;
     using string_span_type = basic_string_span<value_type, Extent>;
 
-    GSL_CXX14_CONSTEXPR basic_zstring_span(impl_type s) noexcept : span_(s)
+    GSL_CONTRACT_CONSTEXPR basic_zstring_span(impl_type s) noexcept : span_(s)
     {
         // expects a zero-terminated span
         Expects(s[s.size() - 1] == '\0');
@@ -500,11 +500,11 @@ public:
 #endif
 
     // assign
-    GSL_CXX14_CONSTEXPR basic_zstring_span& operator=(const basic_zstring_span& other) = default;
+    GSL_DEFAULT_CONSTEXPR basic_zstring_span& operator=(const basic_zstring_span& other) = default;
 
 // move assign
 #ifndef GSL_MSVC_NO_DEFAULT_MOVE_CTOR
-    GSL_CXX14_CONSTEXPR basic_zstring_span& operator=(basic_zstring_span&& other) = default;
+    GSL_DEFAULT_CONSTEXPR basic_zstring_span& operator=(basic_zstring_span&& other) = default;
 #else
     constexpr basic_zstring_span& operator=(basic_zstring_span&& other)
     {

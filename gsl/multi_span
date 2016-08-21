@@ -124,7 +124,7 @@ public:
 
     constexpr index() noexcept {}
 
-    GSL_CXX14_CONSTEXPR index(const value_type (&values)[Rank]) noexcept
+    GSL_MUTABLE_CONSTEXPR index(const value_type (&values)[Rank]) noexcept
     {
         std::copy(values, values + Rank, elems);
     }
@@ -148,17 +148,17 @@ public:
 
     constexpr index(const index& other) noexcept = default;
 
-    GSL_CXX14_CONSTEXPR index& operator=(const index& rhs) noexcept = default;
+    GSL_DEFAULT_CONSTEXPR index& operator=(const index& rhs) noexcept = default;
 
     // Preconditions: component_idx < rank
-    GSL_CXX14_CONSTEXPR reference operator[](size_t component_idx)
+    GSL_MUTABLE_CONSTEXPR reference operator[](size_t component_idx)
     {
         Expects(component_idx < Rank); // Component index must be less than rank
         return elems[component_idx];
     }
 
     // Preconditions: component_idx < rank
-    GSL_CXX14_CONSTEXPR const_reference operator[](size_t component_idx) const noexcept
+    GSL_CONTRACT_CONSTEXPR const_reference operator[](size_t component_idx) const noexcept
     {
         Expects(component_idx < Rank); // Component index must be less than rank
         return elems[component_idx];
@@ -194,7 +194,7 @@ public:
         return ret;
     }
 
-    GSL_CXX14_CONSTEXPR index& operator+=(const index& rhs) noexcept
+    GSL_MUTABLE_CONSTEXPR index& operator+=(const index& rhs) noexcept
     {
         std::transform(elems, elems + rank, rhs.elems, elems, std::plus<value_type>{});
         return *this;
@@ -222,14 +222,14 @@ public:
 
     friend constexpr index operator*(value_type v, const index& rhs) noexcept { return rhs * v; }
 
-    GSL_CXX14_CONSTEXPR index& operator*=(value_type v) noexcept
+    GSL_MUTABLE_CONSTEXPR index& operator*=(value_type v) noexcept
     {
         std::transform(elems, elems + rank, elems,
                        [v](value_type x) { return std::multiplies<value_type>{}(x, v); });
         return *this;
     }
 
-    GSL_CXX14_CONSTEXPR index& operator/=(value_type v) noexcept
+    GSL_MUTABLE_CONSTEXPR index& operator/=(value_type v) noexcept
     {
         std::transform(elems, elems + rank, elems,
                        [v](value_type x) { return std::divides<value_type>{}(x, v); });
@@ -521,7 +521,7 @@ namespace details
 
     template <size_t Rank, bool Enabled = (Rank > 1),
               typename Ret = stdex::enable_if_t<Enabled, index<Rank - 1>>>
-    GSL_CXX14_CONSTEXPR Ret shift_left(const index<Rank>& other) noexcept
+    GSL_MUTABLE_CONSTEXPR Ret shift_left(const index<Rank>& other) noexcept
     {
         Ret ret{};
         for (size_t i = 0; i < Rank - 1; ++i) {
@@ -618,13 +618,13 @@ public:
               typename = stdex::enable_if_t<details::BoundsRangeConvertible<
                   details::BoundsRanges<Ranges...>,
                   details::BoundsRanges<FirstRange, RestRanges...>>::value>>
-    GSL_CXX14_CONSTEXPR static_bounds(const static_bounds<Ranges...>& other) : m_ranges(other.m_ranges)
+    GSL_CONTRACT_CONSTEXPR static_bounds(const static_bounds<Ranges...>& other) : m_ranges(other.m_ranges)
     {
         Expects((MyRanges::DynamicNum == 0 && details::BoundsRanges<Ranges...>::DynamicNum == 0) ||
                 MyRanges::DynamicNum > 0 || other.m_ranges.totalSize() >= m_ranges.totalSize());
     }
 
-    GSL_CXX14_CONSTEXPR static_bounds(std::initializer_list<size_type> il)
+    GSL_CONTRACT_CONSTEXPR static_bounds(std::initializer_list<size_type> il)
         : m_ranges(static_cast<const std::ptrdiff_t*>(il.begin()))
     {
         // Size of the initializer list must match the rank of the array
@@ -636,7 +636,7 @@ public:
 
     constexpr static_bounds() = default;
 
-    GSL_CXX14_CONSTEXPR static_bounds& operator=(const static_bounds& otherBounds)
+    GSL_MUTABLE_CONSTEXPR static_bounds& operator=(const static_bounds& otherBounds)
     {
         new (&m_ranges) MyRanges(otherBounds.m_ranges);
         return *this;
@@ -674,7 +674,7 @@ public:
     }
 
     template <typename IntType>
-    GSL_CXX14_CONSTEXPR size_type extent(IntType dim) const noexcept
+    GSL_CONTRACT_CONSTEXPR size_type extent(IntType dim) const noexcept
     {
         static_assert(std::is_integral<IntType>::value,
                       "Dimension parameter must be supplied as an integral type.");
@@ -735,7 +735,7 @@ public:
 
     constexpr strided_bounds(const strided_bounds&) noexcept = default;
 
-    GSL_CXX14_CONSTEXPR strided_bounds& operator=(const strided_bounds&) noexcept = default;
+    GSL_DEFAULT_CONSTEXPR strided_bounds& operator=(const strided_bounds&) noexcept = default;
 
     constexpr strided_bounds(const value_type (&values)[rank], index_type strides)
         : m_extents(values), m_strides(std::move(strides))
@@ -776,7 +776,7 @@ public:
         return true;
     }
 
-    GSL_CXX14_CONSTEXPR size_type linearize(const index_type& idx) const noexcept
+    GSL_CONTRACT_CONSTEXPR size_type linearize(const index_type& idx) const noexcept
     {
         size_type ret = 0;
         for (size_t i = 0; i < rank; i++) {
@@ -851,7 +851,7 @@ public:
 
     constexpr pointer operator->() const noexcept { return &curr_; }
 
-    GSL_CXX14_CONSTEXPR bounds_iterator& operator++() noexcept
+    GSL_MUTABLE_CONSTEXPR bounds_iterator& operator++() noexcept
     {
         for (size_t i = rank; i-- > 0;) {
             if (curr_[i] < boundary_[i] - 1) {
@@ -865,14 +865,14 @@ public:
         return *this;
     }
 
-    GSL_CXX14_CONSTEXPR bounds_iterator operator++(int) noexcept
+    GSL_MUTABLE_CONSTEXPR bounds_iterator operator++(int) noexcept
     {
         auto ret = *this;
         ++(*this);
         return ret;
     }
 
-    GSL_CXX14_CONSTEXPR bounds_iterator& operator--() noexcept
+    GSL_MUTABLE_CONSTEXPR bounds_iterator& operator--() noexcept
     {
         if (!less(curr_, boundary_)) {
             // if at the past-the-end, set to last element
@@ -894,7 +894,7 @@ public:
         return *this;
     }
 
-    GSL_CXX14_CONSTEXPR bounds_iterator operator--(int) noexcept
+    GSL_MUTABLE_CONSTEXPR bounds_iterator operator--(int) noexcept
     {
         auto ret = *this;
         --(*this);
@@ -907,7 +907,7 @@ public:
         return ret += n;
     }
 
-    GSL_CXX14_CONSTEXPR bounds_iterator& operator+=(difference_type n) noexcept
+    GSL_MUTABLE_CONSTEXPR bounds_iterator& operator+=(difference_type n) noexcept
     {
         auto linear_idx = linearize(curr_) + n;
         stdex::remove_const_t<value_type> stride = 0;
@@ -930,7 +930,7 @@ public:
         return ret -= n;
     }
 
-    GSL_CXX14_CONSTEXPR bounds_iterator& operator-=(difference_type n) noexcept { return *this += -n; }
+    GSL_MUTABLE_CONSTEXPR bounds_iterator& operator-=(difference_type n) noexcept { return *this += -n; }
 
     constexpr difference_type operator-(const bounds_iterator& rhs) const noexcept
     {
@@ -1240,7 +1240,7 @@ public:
 
     // construct from nullptr with size of 0 (helps with template function calls)
     template <class IntType, typename = stdex::enable_if_t<std::is_integral<IntType>::value>>
-    GSL_CXX14_CONSTEXPR multi_span(std::nullptr_t, IntType size) noexcept : multi_span(nullptr, bounds_type{})
+    GSL_CONTRACT_CONSTEXPR multi_span(std::nullptr_t, IntType size) noexcept : multi_span(nullptr, bounds_type{})
     {
         static_assert(bounds_type::dynamic_rank != 0 ||
                           (bounds_type::dynamic_rank == 0 && bounds_type::static_size == 0),
@@ -1267,7 +1267,7 @@ public:
     }
 
     // construct from pointer + length - multidimensional
-    GSL_CXX14_CONSTEXPR multi_span(pointer data, bounds_type bounds) noexcept : data_(data),
+    GSL_CONTRACT_CONSTEXPR multi_span(pointer data, bounds_type bounds) noexcept : data_(data),
                                                                       bounds_(std::move(bounds))
     {
         Expects((bounds_.size() > 0 && data != nullptr) || bounds_.size() == 0);
@@ -1277,7 +1277,7 @@ public:
     template <typename Ptr,
               typename = stdex::enable_if_t<std::is_convertible<Ptr, pointer>::value &&
                                           details::LessThan<bounds_type::dynamic_rank, 2>::value>>
-    GSL_CXX14_CONSTEXPR multi_span(pointer begin, Ptr end)
+    GSL_CONTRACT_CONSTEXPR multi_span(pointer begin, Ptr end)
         : multi_span(begin,
                      details::newBoundsHelper<bounds_type>(static_cast<pointer>(end) - begin))
     {
@@ -1377,13 +1377,13 @@ public:
 
 // trivial assignment
 #ifndef GSL_MSVC_NO_SUPPORT_FOR_MOVE_CTOR_DEFAULT
-    GSL_CXX14_CONSTEXPR multi_span& operator=(multi_span&&) = default;
+    GSL_DEFAULT_CONSTEXPR multi_span& operator=(multi_span&&) = default;
 #endif
-    GSL_CXX14_CONSTEXPR multi_span& operator=(const multi_span&) = default;
+    GSL_DEFAULT_CONSTEXPR multi_span& operator=(const multi_span&) = default;
 
     // first() - extract the first Count elements into a new multi_span
     template <std::ptrdiff_t Count>
-    GSL_CXX14_CONSTEXPR multi_span<ValueType, Count> first() const noexcept
+    GSL_CONTRACT_CONSTEXPR multi_span<ValueType, Count> first() const noexcept
     {
         static_assert(Count >= 0, "Count must be >= 0.");
         static_assert(bounds_type::static_size == dynamic_range ||
@@ -1395,7 +1395,7 @@ public:
     }
 
     // first() - extract the first count elements into a new multi_span
-    GSL_CXX14_CONSTEXPR multi_span<ValueType, dynamic_range> first(size_type count) const noexcept
+    GSL_CONTRACT_CONSTEXPR multi_span<ValueType, dynamic_range> first(size_type count) const noexcept
     {
         Expects(count >= 0 && count <= this->size());
         return {this->data(), count};
@@ -1403,7 +1403,7 @@ public:
 
     // last() - extract the last Count elements into a new multi_span
     template <std::ptrdiff_t Count>
-    GSL_CXX14_CONSTEXPR multi_span<ValueType, Count> last() const noexcept
+    GSL_CONTRACT_CONSTEXPR multi_span<ValueType, Count> last() const noexcept
     {
         static_assert(Count >= 0, "Count must be >= 0.");
         static_assert(bounds_type::static_size == dynamic_range ||
@@ -1415,7 +1415,7 @@ public:
     }
 
     // last() - extract the last count elements into a new multi_span
-    GSL_CXX14_CONSTEXPR multi_span<ValueType, dynamic_range> last(size_type count) const noexcept
+    GSL_CONTRACT_CONSTEXPR multi_span<ValueType, dynamic_range> last(size_type count) const noexcept
     {
         Expects(count >= 0 && count <= this->size());
         return {this->data() + this->size() - count, count};
@@ -1423,7 +1423,7 @@ public:
 
     // subspan() - create a subview of Count elements starting at Offset
     template <std::ptrdiff_t Offset, std::ptrdiff_t Count>
-    GSL_CXX14_CONSTEXPR multi_span<ValueType, Count> subspan() const noexcept
+    GSL_CONTRACT_CONSTEXPR multi_span<ValueType, Count> subspan() const noexcept
     {
         static_assert(Count >= 0, "Count must be >= 0.");
         static_assert(Offset >= 0, "Offset must be >= 0.");
@@ -1439,7 +1439,7 @@ public:
 
     // subspan() - create a subview of count elements starting at offset
     // supplying dynamic_range for count will consume all available elements from offset
-    GSL_CXX14_CONSTEXPR multi_span<ValueType, dynamic_range> subspan(size_type offset,
+    GSL_CONTRACT_CONSTEXPR multi_span<ValueType, dynamic_range> subspan(size_type offset,
                                                            size_type count = dynamic_range) const
         noexcept
     {
@@ -1492,13 +1492,13 @@ public:
     constexpr pointer data() const noexcept { return data_; }
 
     template <typename FirstIndex>
-    GSL_CXX14_CONSTEXPR reference operator()(FirstIndex index)
+    GSL_MUTABLE_CONSTEXPR reference operator()(FirstIndex index)
     {
         return this->operator[](narrow_cast<std::ptrdiff_t>(index));
     }
 
     template <typename FirstIndex, typename... OtherIndices>
-    GSL_CXX14_CONSTEXPR reference operator()(FirstIndex index, OtherIndices... indices)
+    GSL_MUTABLE_CONSTEXPR reference operator()(FirstIndex index, OtherIndices... indices)
     {
         index_type idx = {narrow_cast<std::ptrdiff_t>(index),
                           //narrow_cast<std::ptrdiff_t>(indices...)}; // BUG erreur: no matching function for call to ‘narrow_cast()’
@@ -1514,7 +1514,7 @@ public:
     }
 
     template <bool Enabled = (Rank > 1), typename Ret = stdex::enable_if_t<Enabled, sliced_type>>
-    GSL_CXX14_CONSTEXPR Ret operator[](size_type idx) const noexcept
+    GSL_CONTRACT_CONSTEXPR Ret operator[](size_type idx) const noexcept
     {
         Expects(idx < bounds_.size()); // index is out of bounds of the array
         const size_type ridx = idx * bounds_.stride();
@@ -1654,7 +1654,7 @@ multi_span<byte> as_writeable_bytes(multi_span<U, Dimensions...> s) noexcept
 // on all implementations. It should be considered an experimental extension
 // to the standard GSL interface.
 template <typename U, std::ptrdiff_t... Dimensions>
-GSL_CXX14_CONSTEXPR auto as_multi_span(multi_span<const byte, Dimensions...> s) noexcept -> multi_span<
+GSL_CONTRACT_CONSTEXPR auto as_multi_span(multi_span<const byte, Dimensions...> s) noexcept -> multi_span<
     const U, static_cast<std::ptrdiff_t>(
                  multi_span<const byte, Dimensions...>::bounds_type::static_size != dynamic_range
                      ? (static_cast<size_t>(
@@ -1679,7 +1679,7 @@ GSL_CXX14_CONSTEXPR auto as_multi_span(multi_span<const byte, Dimensions...> s) 
 // on all implementations. It should be considered an experimental extension
 // to the standard GSL interface.
 template <typename U, std::ptrdiff_t... Dimensions>
-GSL_CXX14_CONSTEXPR auto as_multi_span(multi_span<byte, Dimensions...> s) noexcept
+GSL_CONTRACT_CONSTEXPR auto as_multi_span(multi_span<byte, Dimensions...> s) noexcept
     -> multi_span<U, narrow_cast<std::ptrdiff_t>(
                          multi_span<byte, Dimensions...>::bounds_type::static_size != dynamic_range
                              ? static_cast<std::size_t>(
@@ -1743,7 +1743,7 @@ constexpr multi_span<T, dynamic_range> as_multi_span(T* begin, T* end)
 }
 
 template <typename Cont>
-GSL_CXX14_CONSTEXPR auto as_multi_span(Cont& arr) -> stdex::enable_if_t<
+GSL_CONTRACT_CONSTEXPR auto as_multi_span(Cont& arr) -> stdex::enable_if_t<
     !details::is_multi_span<stdex::decay_t<Cont>>::value,
     multi_span<stdex::remove_reference_t<decltype(arr.size(), *arr.data())>, dynamic_range>>
 {
@@ -1758,7 +1758,7 @@ constexpr auto as_multi_span(Cont&& arr) -> stdex::enable_if_t<
 
 // from basic_string which doesn't have nonconst .data() member like other contiguous containers
 template <typename CharT, typename Traits, typename Allocator>
-GSL_CXX14_CONSTEXPR auto as_multi_span(std::basic_string<CharT, Traits, Allocator>& str)
+GSL_CONTRACT_CONSTEXPR auto as_multi_span(std::basic_string<CharT, Traits, Allocator>& str)
     -> multi_span<CharT, dynamic_range>
 {
     Expects(str.size() < PTRDIFF_MAX);
@@ -1797,7 +1797,7 @@ private:
 
 public:
     // from raw data
-    GSL_CXX14_CONSTEXPR strided_span(pointer ptr, size_type size, bounds_type bounds)
+    GSL_CONTRACT_CONSTEXPR strided_span(pointer ptr, size_type size, bounds_type bounds)
         : data_(ptr), bounds_(std::move(bounds))
     {
         Expects((bounds_.size() > 0 && ptr != nullptr) || bounds_.size() == 0);
@@ -1862,7 +1862,7 @@ public:
     }
 
     template <bool Enabled = (Rank > 1), typename Ret = stdex::enable_if_t<Enabled, sliced_type>>
-    GSL_CXX14_CONSTEXPR Ret operator[](size_type idx) const
+    GSL_CONTRACT_CONSTEXPR Ret operator[](size_type idx) const
     {
         Expects(idx < bounds_.size()); // index is out of bounds of the array
         const size_type ridx = idx * bounds_.stride();

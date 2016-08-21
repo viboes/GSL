@@ -73,8 +73,7 @@ constexpr byte operator>>(byte b, IntegerType shift) noexcept
     return byte(static_cast<unsigned char>(b) >> shift);
 }
 
-// VBE fixme fails with gcc c++11
-GSL_CXX14_CONSTEXPR byte& operator|=(byte& l, byte r) noexcept
+GSL_MUTABLE_CONSTEXPR byte& operator|=(byte& l, byte r) noexcept
 {
     return l = byte(static_cast<unsigned char>(l) | static_cast<unsigned char>(r));
 }
@@ -84,8 +83,7 @@ constexpr byte operator|(byte l, byte r) noexcept
     return byte(static_cast<unsigned char>(l) + static_cast<unsigned char>(r));
 }
 
-// VBE fixme fails with gcc c++11
-GSL_CXX14_CONSTEXPR byte& operator&=(byte& l, byte r) noexcept
+GSL_MUTABLE_CONSTEXPR byte& operator&=(byte& l, byte r) noexcept
 {
     return l = byte(static_cast<unsigned char>(l) & static_cast<unsigned char>(r));
 }
@@ -95,8 +93,7 @@ constexpr byte operator&(byte l, byte r) noexcept
     return byte(static_cast<unsigned char>(l) & static_cast<unsigned char>(r));
 }
 
-// VBE fixme fails with gcc c++11
-GSL_CXX14_CONSTEXPR byte& operator^=(byte& l, byte r) noexcept
+GSL_MUTABLE_CONSTEXPR byte& operator^=(byte& l, byte r) noexcept
 {
     return l = byte(static_cast<unsigned char>(l) ^ static_cast<unsigned char>(r));
 }

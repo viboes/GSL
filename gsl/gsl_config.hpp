@@ -26,16 +26,39 @@
 
 #ifdef _MSC_VER
 #if _MSC_VER <= 1800
+#define GSL_NO_CXX11_CONSTEXPR
+#define GSL_CONSTEXPR
+#define GSL_NO_CXX14_CONSTEXPR
 #define GSL_CXX14_CONSTEXPR
+#define GSL_MUTABLE_CONSTEXPR
+#define GSL_DEFAULT_CONSTEXPR
+#define GSL_CONTRACT_CONSTEXPR
 #else
+#define GSL_CONSTEXPR constexpr
 #define GSL_CXX14_CONSTEXPR constexpr
+#define GSL_MUTABLE_CONSTEXPR constexpr
+#define GSL_DEFAULT_CONSTEXPR constexpr
+#define GSL_CONTRACT_CONSTEXPR constexpr
 #endif
 
 #else
 #if __cplusplus > 201402L
 #define GSL_CXX14_CONSTEXPR constexpr
+#define GSL_MUTABLE_CONSTEXPR constexpr
+#define GSL_DEFAULT_CONSTEXPR constexpr
+#define GSL_CONTRACT_CONSTEXPR constexpr
 #else
+#define GSL_NO_CXX14_CONSTEXPR
 #define GSL_CXX14_CONSTEXPR
+#define GSL_MUTABLE_CONSTEXPR
+#define GSL_DEFAULT_CONSTEXPR
+#define GSL_CONTRACT_CONSTEXPR
+#if __cplusplus > 201102L
+#define GSL_CONSTEXPR constexpr
+#else
+#define GSL_NO_CXX11_CONSTEXPR
+#define GSL_CONSTEXPR
+#endif
 #endif
 #endif // _MSC_VER
 

@@ -185,7 +185,7 @@ namespace details
 
         constexpr span_iterator() noexcept : span_iterator(nullptr, 0) {}
 
-        GSL_CXX14_CONSTEXPR span_iterator(const Span* span, typename Span::index_type index)
+        GSL_CONTRACT_CONSTEXPR span_iterator(const Span* span, typename Span::index_type index)
             : span_(span), index_(index)
         {
             Expects(span == nullptr || (index_ >= 0 && index <= span_->length()));
@@ -197,40 +197,40 @@ namespace details
         {
         }
 
-        GSL_CXX14_CONSTEXPR reference operator*() const
+        GSL_CONTRACT_CONSTEXPR reference operator*() const
         {
             Expects(span_);
             return (*span_)[index_];
         }
 
-        GSL_CXX14_CONSTEXPR pointer operator->() const
+        GSL_CONTRACT_CONSTEXPR pointer operator->() const
         {
             Expects(span_);
             return &((*span_)[index_]);
         }
 
-        GSL_CXX14_CONSTEXPR span_iterator& operator++() noexcept
+        GSL_MUTABLE_CONSTEXPR span_iterator& operator++() noexcept
         {
             Expects(span_ && index_ >= 0 && index_ < span_->length());
             ++index_;
             return *this;
         }
 
-        GSL_CXX14_CONSTEXPR span_iterator operator++(int) noexcept
+        GSL_MUTABLE_CONSTEXPR span_iterator operator++(int) noexcept
         {
             auto ret = *this;
             ++(*this);
             return ret;
         }
 
-        GSL_CXX14_CONSTEXPR span_iterator& operator--() noexcept
+        GSL_MUTABLE_CONSTEXPR span_iterator& operator--() noexcept
         {
             Expects(span_ && index_ > 0 && index_ <= span_->length());
             --index_;
             return *this;
         }
 
-        GSL_CXX14_CONSTEXPR span_iterator operator--(int) noexcept
+        GSL_MUTABLE_CONSTEXPR span_iterator operator--(int) noexcept
         {
             auto ret = *this;
             --(*this);
@@ -243,7 +243,7 @@ namespace details
             return ret += n;
         }
 
-        GSL_CXX14_CONSTEXPR span_iterator& operator+=(difference_type n) noexcept
+        GSL_MUTABLE_CONSTEXPR span_iterator& operator+=(difference_type n) noexcept
         {
             Expects(span_ && (index_ + n) >= 0 && (index_ + n) <= span_->length());
             index_ += n;
@@ -256,9 +256,9 @@ namespace details
             return ret -= n;
         }
 
-        GSL_CXX14_CONSTEXPR span_iterator& operator-=(difference_type n) noexcept { return *this += -n; }
+        GSL_MUTABLE_CONSTEXPR span_iterator& operator-=(difference_type n) noexcept { return *this += -n; }
 
-        GSL_CXX14_CONSTEXPR difference_type operator-(const span_iterator& rhs) const noexcept
+        GSL_CONTRACT_CONSTEXPR difference_type operator-(const span_iterator& rhs) const noexcept
         {
             Expects(span_ == rhs.span_);
             return index_ - rhs.index_;
@@ -278,7 +278,7 @@ namespace details
             return !(lhs == rhs);
         }
 
-        GSL_CXX14_CONSTEXPR friend bool operator<(const span_iterator& lhs, const span_iterator& rhs) noexcept
+        GSL_CONTRACT_CONSTEXPR friend bool operator<(const span_iterator& lhs, const span_iterator& rhs) noexcept
         {
             Expects(lhs.span_ == rhs.span_);
             return lhs.index_ < rhs.index_;
@@ -339,14 +339,14 @@ namespace details
         constexpr extent_type() noexcept {}
 
         template <index_type Other>
-        GSL_CXX14_CONSTEXPR extent_type(extent_type<Other> ext) noexcept
+        GSL_CONTRACT_CONSTEXPR extent_type(extent_type<Other> ext) noexcept
         {
             static_assert(Other == Ext || Other == dynamic_extent,
                           "Mismatch between fixed-size extent and size of initializing data.");
             Expects(ext.size() == Ext);
         }
 
-        GSL_CXX14_CONSTEXPR extent_type(index_type size) { Expects(size == Ext); }
+        GSL_CONTRACT_CONSTEXPR extent_type(index_type size) { Expects(size == Ext); }
 
         constexpr inline index_type size() const noexcept { return Ext; }
     };
@@ -362,7 +362,7 @@ namespace details
         {
         }
 
-        explicit GSL_CXX14_CONSTEXPR extent_type(index_type size) : size_(size) { Expects(size >= 0); }
+        explicit GSL_CONTRACT_CONSTEXPR extent_type(index_type size) : size_(size) { Expects(size >= 0); }
 
         constexpr inline index_type size() const noexcept { return size_; }
 
@@ -470,10 +470,10 @@ public:
     }
 
     ~span() noexcept = default;
-    GSL_CXX14_CONSTEXPR span& operator=(const span& other) noexcept = default;
+    GSL_DEFAULT_CONSTEXPR span& operator=(const span& other) noexcept = default;
 
 #ifndef GSL_MSVC_NO_DEFAULT_MOVE_CTOR
-    GSL_CXX14_CONSTEXPR span& operator=(span&& other) noexcept = default;
+    GSL_DEFAULT_CONSTEXPR span& operator=(span&& other) noexcept = default;
 #else
     constexpr span& operator=(span&& other) noexcept
     {
@@ -483,40 +483,40 @@ public:
 #endif
     // [span.sub], span subviews
     template <std::ptrdiff_t Count>
-    GSL_CXX14_CONSTEXPR span<element_type, Count> first() const
+    GSL_CONTRACT_CONSTEXPR span<element_type, Count> first() const
     {
         Expects(Count >= 0 && Count <= size());
         return {data(), Count};
     }
 
     template <std::ptrdiff_t Count>
-    GSL_CXX14_CONSTEXPR span<element_type, Count> last() const
+    GSL_CONTRACT_CONSTEXPR span<element_type, Count> last() const
     {
         Expects(Count >= 0 && Count <= size());
         return {data() + (size() - Count), Count};
     }
 
     template <std::ptrdiff_t Offset, std::ptrdiff_t Count = dynamic_extent>
-    GSL_CXX14_CONSTEXPR span<element_type, Count> subspan() const
+    GSL_CONTRACT_CONSTEXPR span<element_type, Count> subspan() const
     {
         Expects((Offset == 0 || (Offset > 0 && Offset <= size())) &&
                 (Count == dynamic_extent || (Count >= 0 && Offset + Count <= size())));
         return {data() + Offset, Count == dynamic_extent ? size() - Offset : Count};
     }
 
-    GSL_CXX14_CONSTEXPR span<element_type, dynamic_extent> first(index_type count) const
+    GSL_CONTRACT_CONSTEXPR span<element_type, dynamic_extent> first(index_type count) const
     {
         Expects(count >= 0 && count <= size());
         return {data(), count};
     }
 
-    GSL_CXX14_CONSTEXPR span<element_type, dynamic_extent> last(index_type count) const
+    GSL_CONTRACT_CONSTEXPR span<element_type, dynamic_extent> last(index_type count) const
     {
         Expects(count >= 0 && count <= size());
         return {data() + (size() - count), count};
     }
 
-    GSL_CXX14_CONSTEXPR span<element_type, dynamic_extent> subspan(index_type offset,
+    GSL_CONTRACT_CONSTEXPR span<element_type, dynamic_extent> subspan(index_type offset,
                                                          index_type count = dynamic_extent) const
     {
         Expects((offset == 0 || (offset > 0 && offset <= size())) &&
@@ -532,7 +532,7 @@ public:
     constexpr bool empty() const noexcept { return size() == 0; }
 
     // [span.elem], span element access
-    GSL_CXX14_CONSTEXPR reference operator[](index_type idx) const
+    GSL_CONTRACT_CONSTEXPR reference operator[](index_type idx) const
     {
         Expects(idx >= 0 && idx < storage_.size());
         return data()[idx];
@@ -562,7 +562,7 @@ private:
     {
     public:
         template <class OtherExtentType>
-        GSL_CXX14_CONSTEXPR storage_type(pointer data, OtherExtentType ext) : ExtentType(ext), data_(data)
+        GSL_CONTRACT_CONSTEXPR storage_type(pointer data, OtherExtentType ext) : ExtentType(ext), data_(data)
         {
             Expects((!data && ExtentType::size() == 0) || (data && ExtentType::size() >= 0));
         }

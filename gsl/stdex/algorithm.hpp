@@ -39,6 +39,7 @@ struct equal_to
 template <class _T1>
 struct equal_to<_T1, _T1>
 {
+  // fixme this should work for C++11
   GSL_CXX14_CONSTEXPR
     bool operator()(const _T1& _x, const _T1& _y) const {return _x == _y;}
 };
@@ -46,6 +47,7 @@ struct equal_to<_T1, _T1>
 template <class _T1>
 struct equal_to<const _T1, _T1>
 {
+  // fixme this should work for C++11
   GSL_CXX14_CONSTEXPR
     bool operator()(const _T1& _x, const _T1& _y) const {return _x == _y;}
 };
@@ -53,6 +55,7 @@ struct equal_to<const _T1, _T1>
 template <class _T1>
 struct equal_to<_T1, const _T1>
 {
+  // fixme this should work for C++11
   GSL_CXX14_CONSTEXPR
     bool operator()(const _T1& _x, const _T1& _y) const {return _x == _y;}
 };
