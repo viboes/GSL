@@ -42,7 +42,7 @@
 #endif
 
 #else
-#if __cplusplus > 201402L
+#if __cplusplus >= 201402L
 #define GSL_CXX14_CONSTEXPR constexpr
 #define GSL_MUTABLE_CONSTEXPR constexpr
 #define GSL_DEFAULT_CONSTEXPR constexpr
@@ -53,7 +53,7 @@
 #define GSL_MUTABLE_CONSTEXPR
 #define GSL_DEFAULT_CONSTEXPR
 #define GSL_CONTRACT_CONSTEXPR
-#if __cplusplus > 201102L
+#if __cplusplus >= 201102L
 #define GSL_CONSTEXPR constexpr
 #else
 #define GSL_NO_CXX11_CONSTEXPR
