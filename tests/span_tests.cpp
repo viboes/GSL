@@ -15,7 +15,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <UnitTest++/UnitTest++.h>
-#if __cplusplus >= 201102L
 
 #include <gsl/span>
 
@@ -90,22 +89,25 @@ SUITE(span_tests)
             CHECK(sizeof(s) == sizeof(int*));
         }
     }
-
     TEST(from_nullptr_constructor)
     {
         {
-            span<int> s = nullptr;
+            //span<int> s = nullptr;
+            span<int> s;
             CHECK(s.length() == 0 && s.data() == nullptr);
 
-            span<const int> cs = nullptr;
+            //span<const int> cs = nullptr;
+            span<const int> cs;
             CHECK(cs.length() == 0 && cs.data() == nullptr);
         }
 
         {
-            span<int, 0> s = nullptr;
+            //span<int, 0> s = nullptr;
+            span<int, 0> s;
             CHECK(s.length() == 0 && s.data() == nullptr);
 
-            span<const int, 0> cs = nullptr;
+            //span<const int, 0> cs = nullptr;
+            span<const int, 0> cs;
             CHECK(cs.length() == 0 && cs.data() == nullptr);
         }
 
@@ -117,18 +119,22 @@ SUITE(span_tests)
         }
 
         {
-            span<int> s(nullptr);
+            //span<int> s(nullptr);
+            span<int> s;
             CHECK(s.length() == 0 && s.data() == nullptr);
 
-            span<const int> cs(nullptr);
+            //span<const int> cs(nullptr);
+            span<const int> cs;
             CHECK(cs.length() == 0 && cs.data() == nullptr);
         }
 
         {
-            span<int*> s(nullptr);
+            //span<int*> s(nullptr);
+            span<int*> s;
             CHECK(s.length() == 0 && s.data() == nullptr);
 
-            span<const int*> cs(nullptr);
+            //span<const int*> cs(nullptr);
+            span<const int*> cs;
             CHECK(cs.length() == 0 && cs.data() == nullptr);
         }
     }
@@ -362,7 +368,7 @@ SUITE(span_tests)
 
     TEST(from_std_array_constructor)
     {
-        std::array<int, 4> arr = {1, 2, 3, 4};
+        boost::array<int, 4> arr = {1, 2, 3, 4};
 
         {
             span<int> s(arr);
@@ -402,18 +408,18 @@ SUITE(span_tests)
         }
 
         {
-            auto get_an_array = []()->std::array<int, 4> { return{1, 2, 3, 4}; };
+            auto get_an_array = []()->boost::array<int, 4> { return{1, 2, 3, 4}; };
             auto take_a_span = [](span<int> s) { static_cast<void>(s); };
-            // try to take a temporary std::array
+            // try to take a temporary boost::array
             take_a_span(get_an_array());
         }
 #endif
 
 #if __cplusplus >= 201102L
         {
-            auto get_an_array = []() -> std::array<int, 4> { return { 1, 2, 3, 4 }; };
+            auto get_an_array = []() -> boost::array<int, 4> { return { 1, 2, 3, 4 }; };
             auto take_a_span = [](span<const int> s) { static_cast<void>(s); };
-            // try to take a temporary std::array
+            // try to take a temporary boost::array
             take_a_span(get_an_array());
         }
 #endif
@@ -421,7 +427,7 @@ SUITE(span_tests)
 
     TEST(from_const_std_array_constructor)
     {
-        const std::array<int, 4> arr = {1, 2, 3, 4};
+        const boost::array<int, 4> arr = {1, 2, 3, 4};
 
         {
             span<const int> s(arr);
@@ -448,9 +454,9 @@ SUITE(span_tests)
         }
 
         {
-            auto get_an_array = []() -> const std::array<int, 4> { return {1, 2, 3, 4}; };
+            auto get_an_array = []() -> const boost::array<int, 4> { return {1, 2, 3, 4}; };
             auto take_a_span = [](span<const int> s) { static_cast<void>(s); };
-            // try to take a temporary std::array
+            // try to take a temporary boost::array
             take_a_span(get_an_array());
         }
 #endif
@@ -458,7 +464,7 @@ SUITE(span_tests)
 
     TEST(from_std_array_const_constructor)
     {
-        std::array<const int, 4> arr = {1, 2, 3, 4};
+        boost::array<const int, 4> arr = {1, 2, 3, 4};
 
         {
             span<const int> s(arr);
@@ -490,17 +496,24 @@ SUITE(span_tests)
 #endif
     }
 
-#if __cplusplus >= 201102L
+//#if __cplusplus >= 201102L
     TEST(from_container_constructor)
     {
+#if __cplusplus >= 201102L
         std::vector<int> v = {1, 2, 3};
+#else
+        std::vector<int> v(3);
+        v[0]=1;
+        v[1]=2;
+        v[2]=3;
+#endif
         const std::vector<int> cv = v;
 
         {
-            span<int> s{v};
+            span<int> s(v);
             CHECK(s.size() == narrow_cast<std::ptrdiff_t>(v.size()) && s.data() == v.data());
 
-            span<const int> cs{v};
+            span<const int> cs(v);
             CHECK(cs.size() == narrow_cast<std::ptrdiff_t>(v.size()) && cs.data() == v.data());
         }
 
@@ -512,7 +525,7 @@ SUITE(span_tests)
             span<char> s{str};
             CHECK(s.size() == narrow_cast<std::ptrdiff_t>(str.size()) && s.data() == str.data());
 #endif
-            span<const char> cs{str};
+            span<const char> cs(str);
             CHECK(cs.size() == narrow_cast<std::ptrdiff_t>(str.size()) && cs.data() == str.data());
         }
 
@@ -520,7 +533,7 @@ SUITE(span_tests)
 #ifdef CONFIRM_COMPILATION_ERRORS
             span<char> s{cstr};
 #endif
-            span<const char> cs{cstr};
+            span<const char> cs(cstr);
             CHECK(cs.size() == narrow_cast<std::ptrdiff_t>(cstr.size()) &&
                   cs.data() == cstr.data());
         }
@@ -549,11 +562,13 @@ SUITE(span_tests)
 #endif
         }
 
+#if __cplusplus >= 201102L
         {
             auto get_temp_string = []() -> std::string { return {}; };
             auto use_span = [](span<const char> s) { static_cast<void>(s); };
             use_span(get_temp_string());
         }
+#endif
 
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
@@ -578,16 +593,13 @@ SUITE(span_tests)
 #endif
         }
     }
-#endif
 
     TEST(from_convertible_span_constructor)
     {
         {
-#if __cplusplus >= 201102L
             span<DerivedClass> avd;
             span<const DerivedClass> avcd = avd;
             static_cast<void>(avcd);
-#endif
         }
 
         {
@@ -599,19 +611,15 @@ SUITE(span_tests)
         }
 
         {
-#if __cplusplus >= 201102L
             span<int> s;
             span<unsigned int> s2 = s;
             static_cast<void>(s2);
-#endif
         }
 
         {
-#if __cplusplus >= 201102L
             span<int> s;
             span<const unsigned int> s2 = s;
             static_cast<void>(s2);
-#endif
         }
 
         {
@@ -636,12 +644,14 @@ SUITE(span_tests)
         s2 = s1;
         CHECK(s2.empty());
 
+#if __cplusplus >= 201102L
         auto get_temp_span = [&]() -> span<int> { return {&arr[1], 2}; };
         auto use_span = [&](span<const int> s) { CHECK(s.length() == 2 && s.data() == &arr[1]); };
         use_span(get_temp_span());
 
         s1 = get_temp_span();
         CHECK(s1.length() == 2 && s1.data() == &arr[1]);
+#endif
     }
 
     TEST(first)
@@ -772,7 +782,7 @@ SUITE(span_tests)
             CHECK(av.subspan(4).length() == 1);
             CHECK(av.subspan(5).length() == 0);
             CHECK_THROW(av.subspan(6).length(), fail_fast);
-            auto av2 = av.subspan(1);
+            span<int> av2 = av.subspan(1);
             for (int i = 0; i < 4; ++i) CHECK(av2[i] == i + 2);
         }
 
@@ -783,7 +793,7 @@ SUITE(span_tests)
             CHECK(av.subspan(4).length() == 1);
             CHECK(av.subspan(5).length() == 0);
             CHECK_THROW(av.subspan(6).length(), fail_fast);
-            auto av2 = av.subspan(1);
+            span<int,4> av2 = av.subspan(1);
             for (int i = 0; i < 4; ++i) CHECK(av2[i] == i + 2);
         }
     }
@@ -830,8 +840,8 @@ SUITE(span_tests)
         int a[] = { 1, 2, 3, 4 };
         span<int> s = a;
 
-        auto it = s.begin();
-        auto cit = s.cbegin();
+        span<int>::iterator it = s.begin();
+        span<int>::const_iterator cit = s.cbegin();
 
         CHECK(it == cit);
         CHECK(cit == it);
@@ -849,7 +859,7 @@ SUITE(span_tests)
         {
             span<int> s = a;
             span<int>::iterator it = s.begin();
-            auto it2 = it + 1;
+            span<int>::iterator it2 = it + 1;
             span<int>::const_iterator cit = s.cbegin();
 
             CHECK(it == cit);
@@ -909,12 +919,12 @@ SUITE(span_tests)
             int a[] = { 1, 2, 3, 4 };
             span<int> s = a;
 
-            auto it = s.begin();
-            auto first = it;
+            span<int>::iterator it = s.begin();
+            span<int>::iterator first = it;
             CHECK(it == first);
             CHECK(*it == 1);
 
-            auto beyond = s.end();
+            span<int>::iterator beyond = s.end();
             CHECK(it != beyond);
             CHECK_THROW(*beyond, fail_fast);
 
@@ -940,13 +950,16 @@ SUITE(span_tests)
             CHECK(it == beyond);
             CHECK(it - beyond == 0);
 
+#if __cplusplus >= 201102L
             for (auto& n : s)
             {
                 CHECK(n == 5);
             }
+#endif
         }
     }
 
+#if __cplusplus >= 201102L
     TEST(cbegin_cend)
     {
         {
@@ -999,19 +1012,19 @@ SUITE(span_tests)
             CHECK(it - beyond == 0);
         }
     }
-
+#endif
     TEST(rbegin_rend)
     {
         {
             int a[] = {1, 2, 3, 4};
             span<int> s = a;
 
-            auto it = s.rbegin();
-            auto first = it;
+            span<int>::reverse_iterator it = s.rbegin();
+            span<int>::reverse_iterator first = it;
             CHECK(it == first);
             CHECK(*it == 4);
 
-            auto beyond = s.rend();
+            span<int>::reverse_iterator beyond = s.rend();
             CHECK(it != beyond);
             CHECK_THROW(*beyond, fail_fast);
 
@@ -1037,10 +1050,12 @@ SUITE(span_tests)
             CHECK(it == beyond);
             CHECK(it - beyond == 0);
 
+#if __cplusplus >= 201102L
             for (auto& n : s)
             {
                 CHECK(n == 5);
             }
+#endif
         }
     }
 
@@ -1050,12 +1065,12 @@ SUITE(span_tests)
             int a[] = {1, 2, 3, 4};
             span<int> s = a;
 
-            auto it = s.crbegin();
-            auto first = it;
+            span<int>::const_reverse_iterator it = s.crbegin();
+            span<int>::const_reverse_iterator first = it;
             CHECK(it == first);
             CHECK(*it == 4);
 
-            auto beyond = s.crend();
+            span<int>::const_reverse_iterator beyond = s.crend();
             CHECK(it != beyond);
             CHECK_THROW(*beyond, fail_fast);
 
@@ -1087,8 +1102,10 @@ SUITE(span_tests)
     TEST(comparison_operators)
     {
         {
-            span<int> s1 = nullptr;
-            span<int> s2 = nullptr;
+            //span<int> s1 = nullptr;
+            //span<int> s2 = nullptr;
+            span<int> s1;
+            span<int> s2;
             CHECK(s1 == s2);
             CHECK(!(s1 != s2));
             CHECK(!(s1 < s2));
@@ -1125,7 +1142,8 @@ SUITE(span_tests)
         {
             int arr[] = {2, 1}; // bigger
 
-            span<int> s1 = nullptr;
+            //span<int> s1 = nullptr;
+            span<int> s1;
             span<int> s2 = arr;
 
             CHECK(s1 != s2);
@@ -1165,7 +1183,7 @@ SUITE(span_tests)
         {
             int arr[] = {1, 2, 3};
 
-            span<int> s1 = {&arr[0], 2}; // shorter
+            span<int> s1(&arr[0], 2); // shorter
             span<int> s2 = arr; // longer
 
             CHECK(s1 != s2);
@@ -1215,20 +1233,19 @@ SUITE(span_tests)
             CHECK(static_cast<const void*>(bs.data()) == static_cast<const void*>(s.data()));
             CHECK(bs.length() == s.length_bytes());
         }
-
         {
             span<int> s;
-            auto bs = as_bytes(s);
+            span<const byte> bs = as_bytes(s);
             CHECK(bs.length() == s.length());
             CHECK(bs.length() == 0);
             CHECK(bs.size_bytes() == 0);
             CHECK(static_cast<const void*>(bs.data()) == static_cast<const void*>(s.data()));
-            CHECK(bs.data() == nullptr);
+            //CHECK(bs.data() == nullptr);
+            CHECK(bs.data() == 0);
         }
-
         {
             span<int> s = a;
-            auto bs = as_bytes(s);
+            span<const byte> bs = as_bytes(s);
             CHECK(static_cast<const void*>(bs.data()) == static_cast<const void*>(s.data()));
             CHECK(bs.length() == s.length_bytes());
         }
@@ -1251,7 +1268,7 @@ SUITE(span_tests)
 
         {
             span<int> s;
-            auto bs = as_writeable_bytes(s);
+            span<byte> bs = as_writeable_bytes(s);
             CHECK(bs.length() == s.length());
             CHECK(bs.length() == 0);
             CHECK(bs.size_bytes() == 0);
@@ -1261,7 +1278,7 @@ SUITE(span_tests)
 
         {
             span<int> s = a;
-            auto bs = as_writeable_bytes(s);
+            span<byte> bs = as_writeable_bytes(s);
             CHECK(static_cast<void*>(bs.data()) == static_cast<void*>(s.data()));
             CHECK(bs.length() == s.length_bytes());
         }
@@ -1294,6 +1311,7 @@ SUITE(span_tests)
 #endif
 
         // even when done dynamically
+#if __cplusplus >= 201102L
         {
             span<int> s = arr;
             auto f = [&]() {
@@ -1302,12 +1320,12 @@ SUITE(span_tests)
             };
             CHECK_THROW(f(), fail_fast);
         }
-
+#endif
         // but doing so explicitly is ok
 
         // you can convert statically
         {
-            span<int, 2> s2 = {arr, 2};
+            span<int, 2> s2(arr, 2);
             static_cast<void>(s2);
         }
         {
@@ -1322,6 +1340,7 @@ SUITE(span_tests)
             static_cast<void>(s1);
         }
 
+#if __cplusplus >= 201102L
         // initialization or assignment to static span that requires size INCREASE is not ok.
         int arr2[2] = {1, 2};
 
@@ -1349,13 +1368,14 @@ SUITE(span_tests)
             static_cast<void>(s4);
         };
         CHECK_THROW(f(), fail_fast);
+#endif
     }
 
     TEST(interop_with_std_regex)
     {
         char lat[] = { '1', '2', '3', '4', '5', '6', 'E', 'F', 'G' };
         span<char> s = lat;
-        auto f_it = s.begin() + 7;
+        span<char>::iterator f_it = s.begin() + 7;
 
         std::match_results<span<char>::iterator> match;
 
@@ -1374,5 +1394,4 @@ SUITE(span_tests)
         CHECK(match[0].second == (f_it + 1));
     }
 }
-#endif
 int main(int, const char* []) { return UnitTest::RunAllTests(); }

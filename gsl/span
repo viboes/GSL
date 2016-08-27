@@ -200,8 +200,7 @@ namespace details
 #if __cplusplus > 201102L
          : span_iterator(nullptr, 0) {}
 #else
-//fixme
-;
+            : span_(0), index_(0) {}
 #endif         
 
         GSL_CONTRACT_CONSTEXPR span_iterator(const Span* span, typename Span::index_type index)
@@ -217,8 +216,7 @@ namespace details
         {
         }
 #else
-//fixme
-;
+            : span_(other.span_), index_(other.index_) {}
 #endif         
 
         GSL_CONTRACT_CONSTEXPR reference operator*() const
@@ -431,6 +429,12 @@ public:
     GSL_CONSTEXPR span(element_type (&arr)[N]) GSL_NOEXCEPT : storage_(&arr[0], details::extent_type<N>())
     {
     }
+#if 0    
+    template <size_t N>
+    GSL_CONSTEXPR span(typename boost::remove_const<element_type>::type (&arr)[N]) GSL_NOEXCEPT : storage_(&arr[0], details::extent_type<N>())
+    {
+    }
+#endif    
 //fixme
     template <size_t N, class ArrayElementType >
     GSL_CONSTEXPR span(boost::array<ArrayElementType, N>& arr) GSL_NOEXCEPT
@@ -449,12 +453,11 @@ public:
     {
     }
 
-// fixme
-#if ! defined BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
     // NB: the SFINAE here uses .data() as a incomplete/imperfect proxy for the requirement
     // on Container to be a contiguous sequence container.
-    template <class Container,
-              class = typename boost::enable_if_c<
+    template <class Container>  
+    GSL_CONSTEXPR span(Container& cont,
+    typename boost::enable_if_c<
                   !details::is_span<Container>::value && !details::is_std_array<Container>::value &&
                   boost::is_convertible<typename Container::pointer, pointer>::value
 // fixme
@@ -463,13 +466,16 @@ public:
                   boost::is_convertible<typename Container::pointer,
                                       decltype(boost::declval<Container>().data())>::value> 
 #endif                                      
-                      >::type >
-    GSL_CONSTEXPR span(Container& cont) : span(cont.data(), cont.size())
+                      >::type* = 0
+
+    ) 
+    : storage_(cont.data(), cont.size())
     {
     }
 
-    template <class Container,
-              class = typename boost::enable_if_c<
+    template <class Container>
+    GSL_CONSTEXPR span(const Container& cont,
+              typename boost::enable_if_c<
                   boost::is_const<element_type>::value && !details::is_span<Container>::value &&
                   boost::is_convertible<typename Container::pointer, pointer>::value 
 // fixme
@@ -478,11 +484,10 @@ public:
                   boost::is_convertible<typename Container::pointer,
                                       decltype(boost::declval<Container>().data())>::value> 
 #endif                                      
-                      >::type >
-    GSL_CONSTEXPR span(const Container& cont) : span(cont.data(), cont.size())
+                      >::type * = 0    
+    ) : storage_(cont.data(), cont.size())
     {
     }
-#endif                                      
 
     BOOST_DEFAULTED_FUNCTION( GSL_CONSTEXPR span(const span& other) GSL_NOEXCEPT, 
     : storage_(other.storage_){});
@@ -495,19 +500,17 @@ public:
     GSL_CONSTEXPR span(span&& other) GSL_NOEXCEPT : storage_(boost::move(other.storage_)) {}
 #endif
 
-//fixme
-#if ! defined BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
     template <
-        class OtherElementType, std::ptrdiff_t OtherExtent,
-        class = typename boost::enable_if_c<
+        class OtherElementType, std::ptrdiff_t OtherExtent>
+    GSL_CONSTEXPR span(const span<OtherElementType, OtherExtent>& other,
+    typename boost::enable_if_c<
             details::is_allowed_extent_conversion<OtherExtent, Extent>::value &&
-            details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>::type >
-    GSL_CONSTEXPR span(const span<OtherElementType, OtherExtent>& other)
+            details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>::type* =0)
         : storage_(reinterpret_cast<pointer>(other.data()),
                    details::extent_type<OtherExtent>(other.size()))
     {
     }
-#endif
+
 //fixme
 #if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
     template <
@@ -545,14 +548,14 @@ public:
     GSL_CONTRACT_CONSTEXPR span<element_type, Count> first() const
     {
         Expects(Count >= 0 && Count <= size());
-        return span(data(), Count);
+        return span<element_type, Count>(data(), Count);
     }
 
     template <std::ptrdiff_t Count>
     GSL_CONTRACT_CONSTEXPR span<element_type, Count> last() const
     {
         Expects(Count >= 0 && Count <= size());
-        return span(data() + (size() - Count), Count);
+        return span<element_type, Count>(data() + (size() - Count), Count);
     }
 
     template <std::ptrdiff_t Offset, std::ptrdiff_t Count>
@@ -560,7 +563,7 @@ public:
     {
         Expects((Offset == 0 || (Offset > 0 && Offset <= size())) &&
                 (Count == dynamic_extent || (Count >= 0 && Offset + Count <= size())));
-        return span(data() + Offset, Count == dynamic_extent ? size() - Offset : Count);
+        return span<element_type, Count>(data() + Offset, Count == dynamic_extent ? size() - Offset : Count);
     }
 
     template <std::ptrdiff_t Offset>
@@ -569,19 +572,19 @@ public:
         const std::ptrdiff_t Count = dynamic_extent;
         Expects((Offset == 0 || (Offset > 0 && Offset <= size())) &&
                 (Count == dynamic_extent || (Count >= 0 && Offset + Count <= size())));
-        return span(data() + Offset, Count == dynamic_extent ? size() - Offset : Count);
+        return span<element_type, dynamic_extent>(data() + Offset, Count == dynamic_extent ? size() - Offset : Count);
     }
 
     GSL_CONTRACT_CONSTEXPR span<element_type, dynamic_extent> first(index_type count) const
     {
         Expects(count >= 0 && count <= size());
-        return span(data(), count);
+        return span<element_type, dynamic_extent>(data(), count);
     }
 
     GSL_CONTRACT_CONSTEXPR span<element_type, dynamic_extent> last(index_type count) const
     {
         Expects(count >= 0 && count <= size());
-        return span(data() + (size() - count), count);
+        return span<element_type, dynamic_extent>(data() + (size() - count), count);
     }
 
     GSL_CONTRACT_CONSTEXPR span<element_type, dynamic_extent> subspan(index_type offset,
@@ -589,7 +592,7 @@ public:
     {
         Expects((offset == 0 || (offset > 0 && offset <= size())) &&
                 (count == dynamic_extent || (count >= 0 && offset + count <= size())));
-        return span(data() + offset, count == dynamic_extent ? size() - offset : count);
+        return span<element_type, dynamic_extent>(data() + offset, count == dynamic_extent ? size() - offset : count);
     }
 
     // [span.obs], span observers
