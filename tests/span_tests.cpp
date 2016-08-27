@@ -15,6 +15,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <UnitTest++/UnitTest++.h>
+#if __cplusplus >= 201102L
+
 #include <gsl/span>
 
 #include "../gsl/stdex/iterator.hpp"
@@ -68,10 +70,10 @@ SUITE(span_tests)
         }
 
         {
-            span<int> s{};
+            span<int> s;
             CHECK(s.length() == 0 && s.data() == nullptr);
 
-            span<const int> cs{};
+            span<const int> cs;
             CHECK(cs.length() == 0 && cs.data() == nullptr);
         }
     }
@@ -115,18 +117,18 @@ SUITE(span_tests)
         }
 
         {
-            span<int> s{nullptr};
+            span<int> s(nullptr);
             CHECK(s.length() == 0 && s.data() == nullptr);
 
-            span<const int> cs{nullptr};
+            span<const int> cs(nullptr);
             CHECK(cs.length() == 0 && cs.data() == nullptr);
         }
 
         {
-            span<int*> s{nullptr};
+            span<int*> s(nullptr);
             CHECK(s.length() == 0 && s.data() == nullptr);
 
-            span<const int*> cs{nullptr};
+            span<const int*> cs(nullptr);
             CHECK(cs.length() == 0 && cs.data() == nullptr);
         }
     }
@@ -134,21 +136,22 @@ SUITE(span_tests)
     TEST(from_nullptr_length_constructor)
     {
         {
-            span<int> s{nullptr, static_cast<span<int>::index_type>(0)};
+            span<int> s(nullptr, static_cast<span<int>::index_type>(0));
             CHECK(s.length() == 0 && s.data() == nullptr);
 
-            span<const int> cs{nullptr, static_cast<span<int>::index_type>(0)};
+            span<const int> cs(nullptr, static_cast<span<int>::index_type>(0));
             CHECK(cs.length() == 0 && cs.data() == nullptr);
         }
 
         {
-            span<int, 0> s{nullptr, static_cast<span<int>::index_type>(0)};
+            span<int, 0> s(nullptr, static_cast<span<int>::index_type>(0));
             CHECK(s.length() == 0 && s.data() == nullptr);
 
-            span<const int, 0> cs{nullptr, static_cast<span<int>::index_type>(0)};
+            span<const int, 0> cs(nullptr, static_cast<span<int>::index_type>(0));
             CHECK(cs.length() == 0 && cs.data() == nullptr);
         }
 
+#if __cplusplus >= 201102L
         {
             auto workaround_macro = []() { span<int, 1> s{ nullptr, static_cast<span<int>::index_type>(0) }; };
             CHECK_THROW(workaround_macro(), fail_fast);
@@ -169,12 +172,12 @@ SUITE(span_tests)
             auto const_workaround_macro = []() { span<const int, 0> s{nullptr, 1}; };
             CHECK_THROW(const_workaround_macro(), fail_fast);
         }
-
+#endif
         {
-            span<int*> s{nullptr, static_cast<span<int>::index_type>(0)};
+            span<int*> s(nullptr, static_cast<span<int>::index_type>(0));
             CHECK(s.length() == 0 && s.data() == nullptr);
 
-            span<const int*> cs{nullptr, static_cast<span<int>::index_type>(0)};
+            span<const int*> cs(nullptr, static_cast<span<int>::index_type>(0));
             CHECK(cs.length() == 0 && cs.data() == nullptr);
         }
     }
@@ -184,28 +187,30 @@ SUITE(span_tests)
         int arr[4] = {1, 2, 3, 4};
 
         {
-            span<int> s{&arr[0], 2};
+            span<int> s(&arr[0], 2);
             CHECK(s.length() == 2 && s.data() == &arr[0]);
             CHECK(s[0] == 1 && s[1] == 2);
         }
 
         {
-            span<int, 2> s{&arr[0], 2};
+            span<int, 2> s(&arr[0], 2);
             CHECK(s.length() == 2 && s.data() == &arr[0]);
             CHECK(s[0] == 1 && s[1] == 2);
         }
 
         {
             int* p = nullptr;
-            span<int> s{p, static_cast<span<int>::index_type>(0)};
+            span<int> s(p, static_cast<span<int>::index_type>(0));
             CHECK(s.length() == 0 && s.data() == nullptr);
         }
 
+#if __cplusplus >= 201102L
         {
             int* p = nullptr;
             auto workaround_macro = [=]() { span<int> s{p, 2}; };
             CHECK_THROW(workaround_macro(), fail_fast);
         }
+#endif
     }
 
     TEST(from_pointer_pointer_constructor)
@@ -213,24 +218,24 @@ SUITE(span_tests)
         int arr[4] = {1, 2, 3, 4};
 
         {
-            span<int> s{&arr[0], &arr[2]};
+            span<int> s(&arr[0], &arr[2]);
             CHECK(s.length() == 2 && s.data() == &arr[0]);
             CHECK(s[0] == 1 && s[1] == 2);
         }
 
         {
-            span<int, 2> s{&arr[0], &arr[2]};
+            span<int, 2> s(&arr[0], &arr[2]);
             CHECK(s.length() == 2 && s.data() == &arr[0]);
             CHECK(s[0] == 1 && s[1] == 2);
         }
 
         {
-            span<int> s{&arr[0], &arr[0]};
+            span<int> s(&arr[0], &arr[0]);
             CHECK(s.length() == 0 && s.data() == &arr[0]);
         }
 
         {
-            span<int, 0> s{&arr[0], &arr[0]};
+            span<int, 0> s(&arr[0], &arr[0]);
             CHECK(s.length() == 0 && s.data() == &arr[0]);
         }
 
@@ -249,13 +254,13 @@ SUITE(span_tests)
 
         {
             int* p = nullptr;
-            span<int> s{ p, p };
+            span<int> s( p, p );
             CHECK(s.length() == 0 && s.data() == nullptr);
         }
 
         {
             int* p = nullptr;
-            span<int, 0> s{ p, p };
+            span<int, 0> s( p, p );
             CHECK(s.length() == 0 && s.data() == nullptr);
         }
 
@@ -272,12 +277,12 @@ SUITE(span_tests)
         int arr[5] = {1, 2, 3, 4, 5};
 
         {
-            span<int> s{arr};
+            span<int> s(arr);
             CHECK(s.length() == 5 && s.data() == &arr[0]);
         }
 
         {
-            span<int, 5> s{arr};
+            span<int, 5> s(arr);
             CHECK(s.length() == 5 && s.data() == &arr[0]);
         }
 
@@ -285,11 +290,11 @@ SUITE(span_tests)
 
 #ifdef CONFIRM_COMPILATION_ERRORS
         {
-            span<int, 6> s{arr};
+            span<int, 6> s(arr);
         }
 
         {
-            span<int, 0> s{arr};
+            span<int, 0> s(arr);
             CHECK(s.length() == 0 && s.data() == &arr[0]);
         }
 
@@ -309,7 +314,7 @@ SUITE(span_tests)
         }
 #endif
         {
-            span<int[3]> s{ &(arr2d[0]), 1 };
+            span<int[3]> s( &(arr2d[0]), 1 );
             CHECK(s.length() == 1 && s.data() == &arr2d[0]);
         }
 
@@ -338,7 +343,7 @@ SUITE(span_tests)
         }
 #endif
         {
-            span<int[3][2]> s{&arr3d[0], 1};
+            span<int[3][2]> s(&arr3d[0], 1);
             CHECK(s.length() == 1 && s.data() == &arr3d[0]);
         }
     }
@@ -360,40 +365,40 @@ SUITE(span_tests)
         std::array<int, 4> arr = {1, 2, 3, 4};
 
         {
-            span<int> s{arr};
+            span<int> s(arr);
             CHECK(s.size() == narrow_cast<ptrdiff_t>(arr.size()) && s.data() == arr.data());
 
-            span<const int> cs{arr};
+            span<const int> cs(arr);
             CHECK(cs.size() == narrow_cast<ptrdiff_t>(arr.size()) && cs.data() == arr.data());
         }
 
         {
-            span<int, 4> s{arr};
+            span<int, 4> s(arr);
             CHECK(s.size() == narrow_cast<ptrdiff_t>(arr.size()) && s.data() == arr.data());
 
-            span<const int, 4> cs{arr};
+            span<const int, 4> cs(arr);
             CHECK(cs.size() == narrow_cast<ptrdiff_t>(arr.size()) && cs.data() == arr.data());
         }
 
 #ifdef CONFIRM_COMPILATION_ERRORS
         {
-            span<int, 2> s{arr};
+            span<int, 2> s(arr);
             CHECK(s.size() == 2 && s.data() == arr.data());
 
-            span<const int, 2> cs{arr};
+            span<const int, 2> cs(arr);
             CHECK(cs.size() == 2 && cs.data() == arr.data());
         }
 
         {
-            span<int, 0> s{arr};
+            span<int, 0> s(arr);
             CHECK(s.size() == 0 && s.data() == arr.data());
 
-            span<const int, 0> cs{arr};
+            span<const int, 0> cs(arr);
             CHECK(cs.size() == 0 && cs.data() == arr.data());
         }
 
         {
-            span<int, 5> s{arr};
+            span<int, 5> s(arr);
         }
 
         {
@@ -404,12 +409,14 @@ SUITE(span_tests)
         }
 #endif
 
+#if __cplusplus >= 201102L
         {
             auto get_an_array = []() -> std::array<int, 4> { return { 1, 2, 3, 4 }; };
             auto take_a_span = [](span<const int> s) { static_cast<void>(s); };
             // try to take a temporary std::array
             take_a_span(get_an_array());
         }
+#endif
     }
 
     TEST(from_const_std_array_constructor)
@@ -417,27 +424,27 @@ SUITE(span_tests)
         const std::array<int, 4> arr = {1, 2, 3, 4};
 
         {
-            span<const int> s{arr};
+            span<const int> s(arr);
             CHECK(s.size() == narrow_cast<ptrdiff_t>(arr.size()) && s.data() == arr.data());
         }
 
         {
-            span<const int, 4> s{arr};
+            span<const int, 4> s(arr);
             CHECK(s.size() == narrow_cast<ptrdiff_t>(arr.size()) && s.data() == arr.data());
         }
 #ifdef CONFIRM_COMPILATION_ERRORS
         {
-            span<const int, 2> s{arr};
+            span<const int, 2> s(arr);
             CHECK(s.size() == 2 && s.data() == arr.data());
         }
 
         {
-            span<const int, 0> s{arr};
+            span<const int, 0> s(arr);
             CHECK(s.size() == 0 && s.data() == arr.data());
         }
 
         {
-            span<const int, 5> s{arr};
+            span<const int, 5> s(arr);
         }
 
         {
@@ -454,35 +461,36 @@ SUITE(span_tests)
         std::array<const int, 4> arr = {1, 2, 3, 4};
 
         {
-            span<const int> s{arr};
+            span<const int> s(arr);
             CHECK(s.size() == narrow_cast<ptrdiff_t>(arr.size()) && s.data() == arr.data());
         }
 
         {
-            span<const int, 4> s{arr};
+            span<const int, 4> s(arr);
             CHECK(s.size() == narrow_cast<ptrdiff_t>(arr.size()) && s.data() == arr.data());
         }
 #ifdef CONFIRM_COMPILATION_ERRORS
         {
-            span<const int, 2> s{arr};
+            span<const int, 2> s(arr);
             CHECK(s.size() == 2 && s.data() == arr.data());
         }
 
         {
-            span<const int, 0> s{arr};
+            span<const int, 0> s(arr);
             CHECK(s.size() == 0 && s.data() == arr.data());
         }
 
         {
-            span<const int, 5> s{arr};
+            span<const int, 5> s(arr);
         }
 
         {
-            span<int, 4> s{arr};
+            span<int, 4> s(arr);
         }
 #endif
     }
 
+#if __cplusplus >= 201102L
     TEST(from_container_constructor)
     {
         std::vector<int> v = {1, 2, 3};
@@ -525,11 +533,13 @@ SUITE(span_tests)
 #endif
         }
 
+#if __cplusplus >= 201102L
         {
             auto get_temp_vector = []() -> std::vector<int> { return{}; };
             auto use_span = [](span<const int> s) { static_cast<void>(s); };
             use_span(get_temp_vector());
         }
+#endif
 
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
@@ -568,13 +578,16 @@ SUITE(span_tests)
 #endif
         }
     }
+#endif
 
     TEST(from_convertible_span_constructor)
     {
         {
+#if __cplusplus >= 201102L
             span<DerivedClass> avd;
             span<const DerivedClass> avcd = avd;
             static_cast<void>(avcd);
+#endif
         }
 
         {
@@ -586,15 +599,19 @@ SUITE(span_tests)
         }
 
         {
+#if __cplusplus >= 201102L
             span<int> s;
             span<unsigned int> s2 = s;
             static_cast<void>(s2);
+#endif
         }
 
         {
+#if __cplusplus >= 201102L
             span<int> s;
             span<const unsigned int> s2 = s;
             static_cast<void>(s2);
+#endif
         }
 
         {
@@ -1357,5 +1374,5 @@ SUITE(span_tests)
         CHECK(match[0].second == (f_it + 1));
     }
 }
-
+#endif
 int main(int, const char* []) { return UnitTest::RunAllTests(); }

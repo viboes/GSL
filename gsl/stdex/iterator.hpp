@@ -24,6 +24,7 @@
 
 namespace stdex
 {
+#if __cplusplus >= 201102L
 
 template< class C >
 constexpr auto cbegin( const C& c ) -> decltype(std::begin(c)) {
@@ -33,7 +34,7 @@ template< class C >
 constexpr auto cend( const C& c ) -> decltype(std::end(c)) {
   return std::end(c);
 }
-
+#endif
 }
 
 #endif // STDEX_ITERATOR_H

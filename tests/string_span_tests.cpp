@@ -15,6 +15,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <UnitTest++/UnitTest++.h>
+#if __cplusplus >= 201102L
+
 #include <cstdlib>
 #include <gsl/string_span>
 #include <vector>
@@ -952,7 +954,7 @@ SUITE(string_span_tests)
         CHECK(foo["bar"] == 1);
     }
 }
-
+#endif
 int main(int, const char *[])
 {
     return UnitTest::RunAllTests();

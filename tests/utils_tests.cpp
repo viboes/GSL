@@ -27,6 +27,7 @@ SUITE(utils_tests)
         i += 1;
     }
 
+#if __cplusplus >= 201102L
     TEST(finally_lambda)
     {
         int i = 0;
@@ -55,7 +56,6 @@ SUITE(utils_tests)
         }
         CHECK(i == 1);
     }
-
     TEST(finally_function_with_bind)
     {
         int i = 0;
@@ -77,6 +77,7 @@ SUITE(utils_tests)
         }
         CHECK(j == 1);
     }
+#endif
 
     TEST(narrow_cast)
     {
@@ -98,8 +99,8 @@ SUITE(utils_tests)
         n = 300;
         CHECK_THROW(narrow<char>(n), narrowing_error);
 
-        const auto int32_max = std::numeric_limits<int32_t>::max();
-        const auto int32_min = std::numeric_limits<int32_t>::min();
+        const int32_t int32_max = std::numeric_limits<int32_t>::max();
+        const int32_t int32_min = std::numeric_limits<int32_t>::min();
 
         CHECK(narrow<uint32_t>(int32_t(0)) == 0);
         CHECK(narrow<uint32_t>(int32_t(1)) == 1);

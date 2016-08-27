@@ -13,6 +13,10 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+include_directories(
+ ${BOOST_ROOT} /Users/viboes/github/modular-boost3/
+)
+
 install(FILES ${GSL_HEADERS}
     DESTINATION include/gsl
 )

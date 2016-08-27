@@ -21,18 +21,31 @@
 #define GSL_SPAN_H
 
 #include "gsl_config.hpp"
+#include <boost/type_traits.hpp>
+#include "boost/static_assert.hpp"
+
 #include "stdex/type_traits.hpp"
 #include "stdex/algorithm.hpp"
 
 #include "gsl_assert"
 #include "gsl_byte"
 #include "gsl_util"
+#if __cplusplus > 201102L
 #include <array>
+#else
+#include <boost/array.hpp>
+#endif
+
 #include <iterator>
 #include <limits>
 #include <stdexcept>
+#if __cplusplus > 201102L
 #include <type_traits>
+#else
+#include <boost/type_traits.hpp>
+#endif
 #include <utility>
+#include <boost/move/move.hpp>
 
 #ifdef _MSC_VER
 
@@ -89,7 +102,7 @@ namespace gsl
 {
 
 // [views.constants], constants
-constexpr const std::ptrdiff_t dynamic_extent = -1;
+GSL_CONSTEXPR const std::ptrdiff_t dynamic_extent = -1;
 
 template <class ElementType, std::ptrdiff_t Extent = dynamic_extent>
 class span;
@@ -98,62 +111,62 @@ class span;
 namespace details
 {
     template <class T>
-    struct is_span_oracle : std::false_type
+    struct is_span_oracle : boost::false_type
     {
     };
 
     template <class ElementType, std::ptrdiff_t Extent>
-    struct is_span_oracle<gsl::span<ElementType, Extent>> : std::true_type
+    struct is_span_oracle<gsl::span<ElementType, Extent> > : boost::true_type
     {
     };
 
     template <class T>
-    struct is_span : public is_span_oracle<stdex::remove_cv_t<T>>
+    struct is_span : public is_span_oracle<typename boost::remove_cv<T>::type >
     {
     };
 
     template <class T>
-    struct is_std_array_oracle : std::false_type
+    struct is_std_array_oracle : boost::false_type
     {
     };
 
     template <class ElementType, size_t Extent>
-    struct is_std_array_oracle<std::array<ElementType, Extent>> : std::true_type
+    struct is_std_array_oracle<boost::array<ElementType, Extent> > : boost::true_type
     {
     };
 
     template <class T>
-    struct is_std_array : public is_std_array_oracle<stdex::remove_cv_t<T>>
+    struct is_std_array : public is_std_array_oracle<typename boost::remove_cv<T>::type >
     {
     };
 
     template <class From, class To>
     struct is_allowed_pointer_conversion
-        : public std::integral_constant<bool, std::is_pointer<From>::value &&
-                                                  std::is_pointer<To>::value &&
-                                                  std::is_convertible<From, To>::value>
+        : public boost::integral_constant<bool, boost::is_pointer<From>::value &&
+                                                  boost::is_pointer<To>::value &&
+                                                  boost::is_convertible<From, To>::value>
     {
     };
 
     template <class From, class To>
     struct is_allowed_integral_conversion
-        : public std::integral_constant<
-              bool, std::is_integral<From>::value && std::is_integral<To>::value &&
-                        sizeof(From) == sizeof(To) && alignof(From) == alignof(To) &&
-                        std::is_convertible<From, To>::value>
+        : public boost::integral_constant<
+              bool, boost::is_integral<From>::value && boost::is_integral<To>::value &&
+                        sizeof(From) == sizeof(To) && GSL_ALIGNOF(From) == GSL_ALIGNOF(To) &&
+                        boost::is_convertible<From, To>::value>
     {
     };
 
     template <std::ptrdiff_t From, std::ptrdiff_t To>
     struct is_allowed_extent_conversion
-        : public std::integral_constant<bool, From == To || From == gsl::dynamic_extent ||
+        : public boost::integral_constant<bool, From == To || From == gsl::dynamic_extent ||
                                                   To == gsl::dynamic_extent>
     {
     };
 
     template <class From, class To>
     struct is_allowed_element_type_conversion
-        : public std::integral_constant<bool, std::is_same<From, stdex::remove_cv_t<To>>::value ||
+        : public boost::integral_constant<bool, boost::is_same<From, typename boost::remove_cv<To>::type >::value ||
                                                   is_allowed_pointer_conversion<From, To>::value ||
                                                   is_allowed_integral_conversion<From, To>::value>
     {
@@ -161,12 +174,12 @@ namespace details
 
     template <class From>
     struct is_allowed_element_type_conversion<From, byte>
-        : public std::integral_constant<bool, !std::is_const<From>::value>
+        : public boost::integral_constant<bool, !boost::is_const<From>::value>
     {
     };
 
     template <class From>
-    struct is_allowed_element_type_conversion<From, const byte> : public std::true_type
+    struct is_allowed_element_type_conversion<From, const byte> : public boost::true_type
     {
     };
 
@@ -174,16 +187,22 @@ namespace details
     class span_iterator
     {
     public:
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type =
-            stdex::conditional_t<IsConst, stdex::add_const_t<typename Span::element_type>,
-                               typename Span::element_type>;
-        using difference_type = typename Span::index_type;
+        typedef std::random_access_iterator_tag iterator_category ;
+        typedef  
+            typename boost::conditional<IsConst, typename boost::add_const<typename Span::element_type>::type,
+                               typename Span::element_type>::type value_type;
+        typedef typename Span::index_type difference_type;
 
-        using pointer = stdex::add_pointer_t<value_type>;
-        using reference = stdex::add_lvalue_reference_t<value_type>;
+        typedef typename boost::add_pointer<value_type>::type pointer;
+        typedef typename boost::add_lvalue_reference<value_type>::type reference;
 
-        constexpr span_iterator() noexcept : span_iterator(nullptr, 0) {}
+        GSL_CONSTEXPR span_iterator() GSL_NOEXCEPT
+#if __cplusplus > 201102L
+         : span_iterator(nullptr, 0) {}
+#else
+//fixme
+;
+#endif         
 
         GSL_CONTRACT_CONSTEXPR span_iterator(const Span* span, typename Span::index_type index)
             : span_(span), index_(index)
@@ -192,10 +211,15 @@ namespace details
         }
 
         friend class span_iterator<Span, true>;
-        constexpr span_iterator(const span_iterator<Span, false>& other) noexcept
+        GSL_CONSTEXPR span_iterator(const span_iterator<Span, false>& other) GSL_NOEXCEPT
+#if __cplusplus > 201102L
             : span_iterator(other.span_, other.index_)
         {
         }
+#else
+//fixme
+;
+#endif         
 
         GSL_CONTRACT_CONSTEXPR reference operator*() const
         {
@@ -209,99 +233,99 @@ namespace details
             return &((*span_)[index_]);
         }
 
-        GSL_MUTABLE_CONSTEXPR span_iterator& operator++() noexcept
+        GSL_MUTABLE_CONSTEXPR span_iterator& operator++() GSL_NOEXCEPT
         {
             Expects(span_ && index_ >= 0 && index_ < span_->length());
             ++index_;
             return *this;
         }
 
-        GSL_MUTABLE_CONSTEXPR span_iterator operator++(int) noexcept
+        GSL_MUTABLE_CONSTEXPR span_iterator operator++(int) GSL_NOEXCEPT
         {
-            auto ret = *this;
+            span_iterator ret = *this;
             ++(*this);
             return ret;
         }
 
-        GSL_MUTABLE_CONSTEXPR span_iterator& operator--() noexcept
+        GSL_MUTABLE_CONSTEXPR span_iterator& operator--() GSL_NOEXCEPT
         {
             Expects(span_ && index_ > 0 && index_ <= span_->length());
             --index_;
             return *this;
         }
 
-        GSL_MUTABLE_CONSTEXPR span_iterator operator--(int) noexcept
+        GSL_MUTABLE_CONSTEXPR span_iterator operator--(int) GSL_NOEXCEPT
         {
-            auto ret = *this;
+            span_iterator ret = *this;
             --(*this);
             return ret;
         }
 
-        GSL_CXX14_CONSTEXPR span_iterator operator+(difference_type n) const noexcept
+        GSL_CXX14_CONSTEXPR span_iterator operator+(difference_type n) const GSL_NOEXCEPT
         {
-            auto ret = *this;
+            span_iterator ret = *this;
             return ret += n;
         }
 
-        GSL_MUTABLE_CONSTEXPR span_iterator& operator+=(difference_type n) noexcept
+        GSL_MUTABLE_CONSTEXPR span_iterator& operator+=(difference_type n) GSL_NOEXCEPT
         {
             Expects(span_ && (index_ + n) >= 0 && (index_ + n) <= span_->length());
             index_ += n;
             return *this;
         }
 
-        GSL_CXX14_CONSTEXPR span_iterator operator-(difference_type n) const noexcept
+        GSL_CXX14_CONSTEXPR span_iterator operator-(difference_type n) const GSL_NOEXCEPT
         {
-            auto ret = *this;
+            span_iterator ret = *this;
             return ret -= n;
         }
 
-        GSL_MUTABLE_CONSTEXPR span_iterator& operator-=(difference_type n) noexcept { return *this += -n; }
+        GSL_MUTABLE_CONSTEXPR span_iterator& operator-=(difference_type n) GSL_NOEXCEPT { return *this += -n; }
 
-        GSL_CONTRACT_CONSTEXPR difference_type operator-(const span_iterator& rhs) const noexcept
+        GSL_CONTRACT_CONSTEXPR difference_type operator-(const span_iterator& rhs) const GSL_NOEXCEPT
         {
             Expects(span_ == rhs.span_);
             return index_ - rhs.index_;
         }
 
-        constexpr reference operator[](difference_type n) const noexcept { return *(*this + n); }
+        GSL_CONSTEXPR reference operator[](difference_type n) const GSL_NOEXCEPT { return *(*this + n); }
 
-        constexpr friend bool operator==(const span_iterator& lhs,
-                                         const span_iterator& rhs) noexcept
+        GSL_CONSTEXPR friend bool operator==(const span_iterator& lhs,
+                                         const span_iterator& rhs) GSL_NOEXCEPT
         {
             return lhs.span_ == rhs.span_ && lhs.index_ == rhs.index_;
         }
 
-        constexpr friend bool operator!=(const span_iterator& lhs,
-                                         const span_iterator& rhs) noexcept
+        GSL_CONSTEXPR friend bool operator!=(const span_iterator& lhs,
+                                         const span_iterator& rhs) GSL_NOEXCEPT
         {
             return !(lhs == rhs);
         }
 
-        GSL_CONTRACT_CONSTEXPR friend bool operator<(const span_iterator& lhs, const span_iterator& rhs) noexcept
+        GSL_CONTRACT_CONSTEXPR friend bool operator<(const span_iterator& lhs, const span_iterator& rhs) GSL_NOEXCEPT
         {
             Expects(lhs.span_ == rhs.span_);
             return lhs.index_ < rhs.index_;
         }
 
-        constexpr friend bool operator<=(const span_iterator& lhs,
-                                         const span_iterator& rhs) noexcept
+        GSL_CONSTEXPR friend bool operator<=(const span_iterator& lhs,
+                                         const span_iterator& rhs) GSL_NOEXCEPT
         {
             return !(rhs < lhs);
         }
 
-        constexpr friend bool operator>(const span_iterator& lhs, const span_iterator& rhs) noexcept
+        GSL_CONSTEXPR friend bool operator>(const span_iterator& lhs, const span_iterator& rhs) GSL_NOEXCEPT
         {
             return rhs < lhs;
         }
 
-        constexpr friend bool operator>=(const span_iterator& lhs,
-                                         const span_iterator& rhs) noexcept
+        GSL_CONSTEXPR friend bool operator>=(const span_iterator& lhs,
+                                         const span_iterator& rhs) GSL_NOEXCEPT
         {
             return !(rhs > lhs);
         }
 
-        void swap(span_iterator& rhs) noexcept
+        void swap(span_iterator& rhs) GSL_NOEXCEPT
         {
             std::swap(index_, rhs.index_);
             std::swap(span_, rhs.span_);
@@ -313,17 +337,17 @@ namespace details
     };
 
     template <class Span, bool IsConst>
-    constexpr span_iterator<Span, IsConst>
+    GSL_CONSTEXPR span_iterator<Span, IsConst>
     operator+(typename span_iterator<Span, IsConst>::difference_type n,
-              const span_iterator<Span, IsConst>& rhs) noexcept
+              const span_iterator<Span, IsConst>& rhs) GSL_NOEXCEPT
     {
         return rhs + n;
     }
 
     template <class Span, bool IsConst>
-    constexpr span_iterator<Span, IsConst>
+    GSL_CONSTEXPR span_iterator<Span, IsConst>
     operator-(typename span_iterator<Span, IsConst>::difference_type n,
-              const span_iterator<Span, IsConst>& rhs) noexcept
+              const span_iterator<Span, IsConst>& rhs) GSL_NOEXCEPT
     {
         return rhs - n;
     }
@@ -332,39 +356,39 @@ namespace details
     class extent_type
     {
     public:
-        using index_type = std::ptrdiff_t;
+        typedef std::ptrdiff_t index_type;
 
-        static_assert(Ext >= 0, "A fixed-size span must be >= 0 in size.");
+        BOOST_STATIC_ASSERT_MSG(Ext >= 0, "A fixed-size span must be >= 0 in size.");
 
-        constexpr extent_type() noexcept {}
+        GSL_CONSTEXPR extent_type() GSL_NOEXCEPT {}
 
         template <index_type Other>
-        GSL_CONTRACT_CONSTEXPR extent_type(extent_type<Other> ext) noexcept
+        GSL_CONTRACT_CONSTEXPR extent_type(extent_type<Other> ext) GSL_NOEXCEPT
         {
-            static_assert(Other == Ext || Other == dynamic_extent,
+            BOOST_STATIC_ASSERT_MSG(Other == Ext || Other == dynamic_extent,
                           "Mismatch between fixed-size extent and size of initializing data.");
             Expects(ext.size() == Ext);
         }
 
         GSL_CONTRACT_CONSTEXPR extent_type(index_type size) { Expects(size == Ext); }
 
-        constexpr inline index_type size() const noexcept { return Ext; }
+        GSL_CONSTEXPR inline index_type size() const GSL_NOEXCEPT { return Ext; }
     };
 
     template <>
     class extent_type<dynamic_extent>
     {
     public:
-        using index_type = std::ptrdiff_t;
+        typedef std::ptrdiff_t index_type;
 
         template <index_type Other>
-        explicit constexpr extent_type(extent_type<Other> ext) : size_(ext.size())
+        explicit GSL_CONSTEXPR extent_type(extent_type<Other> ext) : size_(ext.size())
         {
         }
 
         explicit GSL_CONTRACT_CONSTEXPR extent_type(index_type size) : size_(size) { Expects(size >= 0); }
 
-        constexpr inline index_type size() const noexcept { return size_; }
+        GSL_CONSTEXPR inline index_type size() const GSL_NOEXCEPT { return size_; }
 
     private:
         index_type size_;
@@ -377,143 +401,187 @@ class span
 {
 public:
     // constants and types
-    using element_type = ElementType;
-    using index_type = std::ptrdiff_t;
-    using pointer = element_type*;
-    using reference = element_type&;
+    typedef ElementType element_type;
+    typedef std::ptrdiff_t index_type;
+    typedef element_type* pointer;
+    typedef element_type& reference;
 
-    using iterator = details::span_iterator<span<ElementType, Extent>, false>;
-    using const_iterator = details::span_iterator<span<ElementType, Extent>, true>;
-    using reverse_iterator = std::reverse_iterator<iterator>;
-    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+    typedef details::span_iterator<span<ElementType, Extent>, false> iterator;
+    typedef details::span_iterator<span<ElementType, Extent>, true> const_iterator;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
-    constexpr static const index_type extent = Extent;
+    GSL_CONSTEXPR static const index_type extent = Extent;
 
     // [span.cons], span constructors, copy, assignment, and destructor
-    constexpr span() noexcept : storage_(nullptr, details::extent_type<0>()) {}
+    GSL_CONSTEXPR span() GSL_NOEXCEPT : storage_(nullptr, details::extent_type<0>()) {}
 
-    constexpr span(std::nullptr_t) noexcept : span() {}
+//fixme
+#if ! defined BOOST_NO_CXX11_NULLPTR   
+    GSL_CONSTEXPR span(std::nullptr_t) GSL_NOEXCEPT : span() {}
+#endif
+    GSL_CONSTEXPR span(pointer ptr, index_type count) : storage_(ptr, count) {}
 
-    constexpr span(pointer ptr, index_type count) : storage_(ptr, count) {}
-
-    constexpr span(pointer firstElem, pointer lastElem)
+    GSL_CONSTEXPR span(pointer firstElem, pointer lastElem)
         : storage_(firstElem, std::distance(firstElem, lastElem))
     {
     }
 
     template <size_t N>
-    constexpr span(element_type (&arr)[N]) noexcept : storage_(&arr[0], details::extent_type<N>())
+    GSL_CONSTEXPR span(element_type (&arr)[N]) GSL_NOEXCEPT : storage_(&arr[0], details::extent_type<N>())
     {
     }
-
-    template <size_t N, class ArrayElementType = stdex::remove_const_t<element_type>>
-    constexpr span(std::array<ArrayElementType, N>& arr) noexcept
+//fixme
+    template <size_t N, class ArrayElementType >
+    GSL_CONSTEXPR span(boost::array<ArrayElementType, N>& arr) GSL_NOEXCEPT
+        : storage_(&arr[0], details::extent_type<N>())
+    {
+    }
+    template <size_t N >
+    GSL_CONSTEXPR span(boost::array<typename boost::remove_const<element_type>::type, N>& arr) GSL_NOEXCEPT
         : storage_(&arr[0], details::extent_type<N>())
     {
     }
 
     template <size_t N>
-    constexpr span(const std::array<stdex::remove_const_t<element_type>, N>& arr) noexcept
+    GSL_CONSTEXPR span(const boost::array<typename boost::remove_const<element_type>::type, N>& arr) GSL_NOEXCEPT
         : storage_(&arr[0], details::extent_type<N>())
     {
     }
 
+// fixme
+#if ! defined BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
     // NB: the SFINAE here uses .data() as a incomplete/imperfect proxy for the requirement
     // on Container to be a contiguous sequence container.
     template <class Container,
-              class = stdex::enable_if_t<
+              class = typename boost::enable_if_c<
                   !details::is_span<Container>::value && !details::is_std_array<Container>::value &&
-                  std::is_convertible<typename Container::pointer, pointer>::value &&
-                  std::is_convertible<typename Container::pointer,
-                                      decltype(std::declval<Container>().data())>::value>>
-    constexpr span(Container& cont) : span(cont.data(), cont.size())
+                  boost::is_convertible<typename Container::pointer, pointer>::value
+// fixme
+#if ! defined BOOST_NO_CXX11_DECLTYPE
+                  &&
+                  boost::is_convertible<typename Container::pointer,
+                                      decltype(boost::declval<Container>().data())>::value> 
+#endif                                      
+                      >::type >
+    GSL_CONSTEXPR span(Container& cont) : span(cont.data(), cont.size())
     {
     }
 
     template <class Container,
-              class = stdex::enable_if_t<
-                  std::is_const<element_type>::value && !details::is_span<Container>::value &&
-                  std::is_convertible<typename Container::pointer, pointer>::value &&
-                  std::is_convertible<typename Container::pointer,
-                                      decltype(std::declval<Container>().data())>::value>>
-    constexpr span(const Container& cont) : span(cont.data(), cont.size())
+              class = typename boost::enable_if_c<
+                  boost::is_const<element_type>::value && !details::is_span<Container>::value &&
+                  boost::is_convertible<typename Container::pointer, pointer>::value 
+// fixme
+#if ! defined BOOST_NO_CXX11_DECLTYPE
+                  &&
+                  boost::is_convertible<typename Container::pointer,
+                                      decltype(boost::declval<Container>().data())>::value> 
+#endif                                      
+                      >::type >
+    GSL_CONSTEXPR span(const Container& cont) : span(cont.data(), cont.size())
     {
     }
+#endif                                      
 
-    constexpr span(const span& other) noexcept = default;
+    BOOST_DEFAULTED_FUNCTION( GSL_CONSTEXPR span(const span& other) GSL_NOEXCEPT, 
+    : storage_(other.storage_){});
 #ifndef GSL_MSVC_NO_DEFAULT_MOVE_CTOR
-    constexpr span(span&& other) noexcept = default;
+//fixme
+#if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
+    BOOST_DEFAULTED_FUNCTION( GSL_CONSTEXPR span(span&& other) GSL_NOEXCEPT, {});
+#endif
 #else
-    constexpr span(span&& other) noexcept : storage_(std::move(other.storage_)) {}
+    GSL_CONSTEXPR span(span&& other) GSL_NOEXCEPT : storage_(boost::move(other.storage_)) {}
 #endif
 
+//fixme
+#if ! defined BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
     template <
         class OtherElementType, std::ptrdiff_t OtherExtent,
-        class = stdex::enable_if_t<
+        class = typename boost::enable_if_c<
             details::is_allowed_extent_conversion<OtherExtent, Extent>::value &&
-            details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>>
-    constexpr span(const span<OtherElementType, OtherExtent>& other)
+            details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>::type >
+    GSL_CONSTEXPR span(const span<OtherElementType, OtherExtent>& other)
         : storage_(reinterpret_cast<pointer>(other.data()),
                    details::extent_type<OtherExtent>(other.size()))
     {
     }
-
+#endif
+//fixme
+#if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
     template <
         class OtherElementType, std::ptrdiff_t OtherExtent,
-        class = stdex::enable_if_t<
+        class = typename boost::enable_if_c<
             details::is_allowed_extent_conversion<OtherExtent, Extent>::value &&
-            details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>>
-    constexpr span(span<OtherElementType, OtherExtent>&& other)
+            details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>::type >
+    GSL_CONSTEXPR span(span<OtherElementType, OtherExtent>&& other)
         : storage_(reinterpret_cast<pointer>(other.data()),
                    details::extent_type<OtherExtent>(other.size()))
     {
     }
+#endif
 
-    ~span() noexcept = default;
-    GSL_DEFAULT_CONSTEXPR span& operator=(const span& other) noexcept = default;
+    BOOST_DEFAULTED_FUNCTION( ~span() GSL_NOEXCEPT, {});
+    BOOST_DEFAULTED_FUNCTION ( GSL_DEFAULT_CONSTEXPR span& operator=(const span& other) GSL_NOEXCEPT, {
+      storage_= other.storage_;
+      return *this;
+    });
 
+//fixme
+#if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
 #ifndef GSL_MSVC_NO_DEFAULT_MOVE_CTOR
-    GSL_DEFAULT_CONSTEXPR span& operator=(span&& other) noexcept = default;
+    BOOST_DEFAULTED_FUNCTION( GSL_DEFAULT_CONSTEXPR span& operator=(span&& other) GSL_NOEXCEPT, {});
 #else
-    constexpr span& operator=(span&& other) noexcept
+    GSL_CONSTEXPR span& operator=(span&& other) GSL_NOEXCEPT
     {
-        storage_ = std::move(other.storage_);
+        storage_ = boost::move(other.storage_);
         return *this;
     }
+#endif
 #endif
     // [span.sub], span subviews
     template <std::ptrdiff_t Count>
     GSL_CONTRACT_CONSTEXPR span<element_type, Count> first() const
     {
         Expects(Count >= 0 && Count <= size());
-        return {data(), Count};
+        return span(data(), Count);
     }
 
     template <std::ptrdiff_t Count>
     GSL_CONTRACT_CONSTEXPR span<element_type, Count> last() const
     {
         Expects(Count >= 0 && Count <= size());
-        return {data() + (size() - Count), Count};
+        return span(data() + (size() - Count), Count);
     }
 
-    template <std::ptrdiff_t Offset, std::ptrdiff_t Count = dynamic_extent>
+    template <std::ptrdiff_t Offset, std::ptrdiff_t Count>
     GSL_CONTRACT_CONSTEXPR span<element_type, Count> subspan() const
     {
         Expects((Offset == 0 || (Offset > 0 && Offset <= size())) &&
                 (Count == dynamic_extent || (Count >= 0 && Offset + Count <= size())));
-        return {data() + Offset, Count == dynamic_extent ? size() - Offset : Count};
+        return span(data() + Offset, Count == dynamic_extent ? size() - Offset : Count);
+    }
+
+    template <std::ptrdiff_t Offset>
+    GSL_CONTRACT_CONSTEXPR span<element_type, dynamic_extent> subspan() const
+    {
+        const std::ptrdiff_t Count = dynamic_extent;
+        Expects((Offset == 0 || (Offset > 0 && Offset <= size())) &&
+                (Count == dynamic_extent || (Count >= 0 && Offset + Count <= size())));
+        return span(data() + Offset, Count == dynamic_extent ? size() - Offset : Count);
     }
 
     GSL_CONTRACT_CONSTEXPR span<element_type, dynamic_extent> first(index_type count) const
     {
         Expects(count >= 0 && count <= size());
-        return {data(), count};
+        return span(data(), count);
     }
 
     GSL_CONTRACT_CONSTEXPR span<element_type, dynamic_extent> last(index_type count) const
     {
         Expects(count >= 0 && count <= size());
-        return {data() + (size() - count), count};
+        return span(data() + (size() - count), count);
     }
 
     GSL_CONTRACT_CONSTEXPR span<element_type, dynamic_extent> subspan(index_type offset,
@@ -521,15 +589,15 @@ public:
     {
         Expects((offset == 0 || (offset > 0 && offset <= size())) &&
                 (count == dynamic_extent || (count >= 0 && offset + count <= size())));
-        return {data() + offset, count == dynamic_extent ? size() - offset : count};
+        return span(data() + offset, count == dynamic_extent ? size() - offset : count);
     }
 
     // [span.obs], span observers
-    constexpr index_type length() const noexcept { return size(); }
-    constexpr index_type size() const noexcept { return storage_.size(); }
-    constexpr index_type length_bytes() const noexcept { return size_bytes(); }
-    constexpr index_type size_bytes() const noexcept { return size() * sizeof(element_type); }
-    constexpr bool empty() const noexcept { return size() == 0; }
+    GSL_CONSTEXPR index_type length() const GSL_NOEXCEPT { return size(); }
+    GSL_CONSTEXPR index_type size() const GSL_NOEXCEPT { return storage_.size(); }
+    GSL_CONSTEXPR index_type length_bytes() const GSL_NOEXCEPT { return size_bytes(); }
+    GSL_CONSTEXPR index_type size_bytes() const GSL_NOEXCEPT { return size() * sizeof(element_type); }
+    GSL_CONSTEXPR bool empty() const GSL_NOEXCEPT { return size() == 0; }
 
     // [span.elem], span element access
     GSL_CONTRACT_CONSTEXPR reference operator[](index_type idx) const
@@ -537,21 +605,21 @@ public:
         Expects(idx >= 0 && idx < storage_.size());
         return data()[idx];
     }
-    constexpr reference operator()(index_type idx) const { return this->operator[](idx); }
-    constexpr pointer data() const noexcept { return storage_.data(); }
+    GSL_CONSTEXPR reference operator()(index_type idx) const { return this->operator[](idx); }
+    GSL_CONSTEXPR pointer data() const GSL_NOEXCEPT { return storage_.data(); }
 
     // [span.iter], span iterator support
-    iterator begin() const noexcept { return {this, 0}; }
-    iterator end() const noexcept { return {this, length()}; }
+    iterator begin() const GSL_NOEXCEPT { return iterator(this, 0); }
+    iterator end() const GSL_NOEXCEPT { return iterator(this, length()); }
 
-    const_iterator cbegin() const noexcept { return {this, 0}; }
-    const_iterator cend() const noexcept { return {this, length()}; }
+    const_iterator cbegin() const GSL_NOEXCEPT { return const_iterator(this, 0); }
+    const_iterator cend() const GSL_NOEXCEPT { return const_iterator(this, length()); }
 
-    reverse_iterator rbegin() const noexcept { return reverse_iterator{end()}; }
-    reverse_iterator rend() const noexcept { return reverse_iterator{begin()}; }
+    reverse_iterator rbegin() const GSL_NOEXCEPT { return reverse_iterator(end()); }
+    reverse_iterator rend() const GSL_NOEXCEPT { return reverse_iterator(begin()); }
 
-    const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator{cend()}; }
-    const_reverse_iterator crend() const noexcept { return const_reverse_iterator{cbegin()}; }
+    const_reverse_iterator crbegin() const GSL_NOEXCEPT { return const_reverse_iterator(cend()); }
+    const_reverse_iterator crend() const GSL_NOEXCEPT { return const_reverse_iterator(cbegin()); }
 
 private:
     // this implementation detail class lets us take advantage of the
@@ -567,18 +635,18 @@ private:
             Expects((!data && ExtentType::size() == 0) || (data && ExtentType::size() >= 0));
         }
 
-        constexpr inline pointer data() const noexcept { return data_; }
+        GSL_CONSTEXPR inline pointer data() const GSL_NOEXCEPT { return data_; }
 
     private:
         pointer data_;
     };
 
-    storage_type<details::extent_type<Extent>> storage_;
+    storage_type<details::extent_type<Extent> > storage_;
 };
 
 // [span.comparison], span comparison operators
 template <class ElementType, std::ptrdiff_t FirstExtent, std::ptrdiff_t SecondExtent>
-constexpr bool operator==(const span<ElementType, FirstExtent>& l,
+GSL_CONSTEXPR bool operator==(const span<ElementType, FirstExtent>& l,
                           const span<ElementType, SecondExtent>& r)
 {
 #ifdef GSL_MSVC_NO_CPP14_STD_EQUAL
@@ -589,31 +657,31 @@ constexpr bool operator==(const span<ElementType, FirstExtent>& l,
 }
 
 template <class ElementType, std::ptrdiff_t Extent>
-constexpr bool operator!=(const span<ElementType, Extent>& l, const span<ElementType, Extent>& r)
+GSL_CONSTEXPR bool operator!=(const span<ElementType, Extent>& l, const span<ElementType, Extent>& r)
 {
     return !(l == r);
 }
 
 template <class ElementType, std::ptrdiff_t Extent>
-constexpr bool operator<(const span<ElementType, Extent>& l, const span<ElementType, Extent>& r)
+GSL_CONSTEXPR bool operator<(const span<ElementType, Extent>& l, const span<ElementType, Extent>& r)
 {
     return std::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
 }
 
 template <class ElementType, std::ptrdiff_t Extent>
-constexpr bool operator<=(const span<ElementType, Extent>& l, const span<ElementType, Extent>& r)
+GSL_CONSTEXPR bool operator<=(const span<ElementType, Extent>& l, const span<ElementType, Extent>& r)
 {
     return !(l > r);
 }
 
 template <class ElementType, std::ptrdiff_t Extent>
-constexpr bool operator>(const span<ElementType, Extent>& l, const span<ElementType, Extent>& r)
+GSL_CONSTEXPR bool operator>(const span<ElementType, Extent>& l, const span<ElementType, Extent>& r)
 {
     return r < l;
 }
 
 template <class ElementType, std::ptrdiff_t Extent>
-constexpr bool operator>=(const span<ElementType, Extent>& l, const span<ElementType, Extent>& r)
+GSL_CONSTEXPR bool operator>=(const span<ElementType, Extent>& l, const span<ElementType, Extent>& r)
 {
     return !(l < r);
 }
@@ -628,7 +696,7 @@ namespace details
     // and so will fail compilation of the template
     template <class ElementType, std::ptrdiff_t Extent>
     struct calculate_byte_size
-        : std::integral_constant<std::ptrdiff_t,
+        : boost::integral_constant<std::ptrdiff_t,
                                  static_cast<std::ptrdiff_t>(sizeof(ElementType) *
                                                              static_cast<std::size_t>(Extent))>
     {
@@ -636,7 +704,7 @@ namespace details
 
     template <class ElementType>
     struct calculate_byte_size<ElementType, dynamic_extent>
-        : std::integral_constant<std::ptrdiff_t, dynamic_extent>
+        : boost::integral_constant<std::ptrdiff_t, dynamic_extent>
     {
     };
 }
@@ -644,17 +712,20 @@ namespace details
 // [span.objectrep], views of object representation
 template <class ElementType, std::ptrdiff_t Extent>
 span<const byte, details::calculate_byte_size<ElementType, Extent>::value>
-as_bytes(span<ElementType, Extent> s) noexcept
+as_bytes(span<ElementType, Extent> s) GSL_NOEXCEPT
 {
-    return {reinterpret_cast<const byte*>(s.data()), s.size_bytes()};
+    typedef span<const byte, details::calculate_byte_size<ElementType, Extent>::value> result_type;
+    return result_type(reinterpret_cast<const byte*>(s.data()), s.size_bytes());
 }
 
-template <class ElementType, std::ptrdiff_t Extent,
-          class = stdex::enable_if_t<!std::is_const<ElementType>::value>>
-span<byte, details::calculate_byte_size<ElementType, Extent>::value>
-as_writeable_bytes(span<ElementType, Extent> s) noexcept
+template <class ElementType, std::ptrdiff_t Extent>         
+typename boost::enable_if_c<!boost::is_const<ElementType>::value,
+  span<byte, details::calculate_byte_size<ElementType, Extent>::value>
+>::type 
+as_writeable_bytes(span<ElementType, Extent> s) GSL_NOEXCEPT
 {
-    return {reinterpret_cast<byte*>(s.data()), s.size_bytes()};
+    typedef span<byte, details::calculate_byte_size<ElementType, Extent>::value> result_type;
+    return result_type(reinterpret_cast<byte*>(s.data()), s.size_bytes());
 }
 
 } // namespace gsl

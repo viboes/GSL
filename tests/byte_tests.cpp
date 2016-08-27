@@ -36,12 +36,12 @@ SUITE(byte_tests)
     {
         {
             byte b = static_cast<byte>(4);
-            CHECK(static_cast<unsigned char>(b) == 4);
+            CHECK(boost::underlying_cast<unsigned char>(b) == 4);
         }
 
         {
             byte b = byte(12);
-            CHECK(static_cast<unsigned char>(b) == 12);
+            CHECK(boost::underlying_cast<unsigned char>(b) == 12);
         }
 
         // waiting for C++17 enum class direct initializer support
@@ -69,7 +69,7 @@ SUITE(byte_tests)
         CHECK(a == byte(0x01));
 
         CHECK((b ^ a) == byte(0xFE));
-        
+
         CHECK(a == byte(0x01));
         a ^= b;
         CHECK(a == byte(0xFE));

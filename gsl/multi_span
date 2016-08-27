@@ -19,7 +19,10 @@
 #ifndef GSL_MULTI_SPAN_H
 #define GSL_MULTI_SPAN_H
 
+#if __cplusplus >= 201102L
+
 #include "gsl_config.hpp"
+
 #include "stdex/type_traits.hpp"
 
 #include "gsl_assert"
@@ -38,6 +41,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <boost/move/move.hpp>
 
 #ifdef _MSC_VER
 
@@ -93,7 +97,7 @@ namespace details
     {
         static const SizeType max_value = std::numeric_limits<SizeType>::max();
     };
-
+    
     template <typename... Ts>
     class are_integral : public std::integral_constant<bool, true>
     {
@@ -738,7 +742,7 @@ public:
     GSL_DEFAULT_CONSTEXPR strided_bounds& operator=(const strided_bounds&) noexcept = default;
 
     constexpr strided_bounds(const value_type (&values)[rank], index_type strides)
-        : m_extents(values), m_strides(std::move(strides))
+        : m_extents(values), m_strides(boost::move(strides))
     {
     }
 
@@ -842,7 +846,7 @@ public:
     template <typename Bounds>
     explicit bounds_iterator(const Bounds& bnd, value_type curr) noexcept
         : boundary_(bnd.index_bounds()),
-          curr_(std::move(curr))
+          curr_(boost::move(curr))
     {
         static_assert(is_bounds<Bounds>::value, "Bounds type must be provided");
     }
@@ -1268,7 +1272,7 @@ public:
 
     // construct from pointer + length - multidimensional
     GSL_CONTRACT_CONSTEXPR multi_span(pointer data, bounds_type bounds) noexcept : data_(data),
-                                                                      bounds_(std::move(bounds))
+                                                                      bounds_(boost::move(bounds))
     {
         Expects((bounds_.size() > 0 && data != nullptr) || bounds_.size() == 0);
     }
@@ -1798,7 +1802,7 @@ private:
 public:
     // from raw data
     GSL_CONTRACT_CONSTEXPR strided_span(pointer ptr, size_type size, bounds_type bounds)
-        : data_(ptr), bounds_(std::move(bounds))
+        : data_(ptr), bounds_(boost::move(bounds))
     {
         Expects((bounds_.size() > 0 && ptr != nullptr) || bounds_.size() == 0);
         // Bounds cross data boundaries
@@ -1809,7 +1813,7 @@ public:
     // from static array of size N
     template <size_type N>
     constexpr strided_span(value_type (&values)[N], bounds_type bounds)
-        : strided_span(values, N, std::move(bounds))
+        : strided_span(values, N, boost::move(bounds))
     {
     }
 
@@ -1819,7 +1823,7 @@ public:
               bool Enabled2 = std::is_convertible<OtherValueType*, ValueType*>::value,
               typename Dummy = stdex::enable_if_t<Enabled1 && Enabled2>>
     constexpr strided_span(multi_span<OtherValueType, Dimensions...> av, bounds_type bounds)
-        : strided_span(av.data(), av.bounds().total_size(), std::move(bounds))
+        : strided_span(av.data(), av.bounds().total_size(), boost::move(bounds))
     {
     }
 
@@ -2243,5 +2247,7 @@ general_span_iterator<Span> operator+(typename general_span_iterator<Span>::diff
 #endif
 
 #endif // GSL_THROW_ON_CONTRACT_VIOLATION
+
+#endif
 
 #endif // GSL_MULTI_SPAN_H

@@ -20,12 +20,12 @@
 #ifndef GSL_CONFIG_H
 #define GSL_CONFIG_H
 
-#include <type_traits>
-#include <iterator>
-#include <algorithm>
+#include <boost/config.hpp>
+#include <boost/type_traits/alignment_of.hpp>
+
+
 
 #ifdef _MSC_VER
-#if _MSC_VER <= 1800
 #define GSL_NO_CXX11_CONSTEXPR
 #define GSL_CONSTEXPR
 #define GSL_NO_CXX14_CONSTEXPR
@@ -33,15 +33,20 @@
 #define GSL_MUTABLE_CONSTEXPR
 #define GSL_DEFAULT_CONSTEXPR
 #define GSL_CONTRACT_CONSTEXPR
+#if _MSC_VER <= 1800
+#define GSL_NO_CXX11_CONSTEXPR
+#define GSL_NOEXCEPT
 #else
-#define GSL_CONSTEXPR constexpr
-#define GSL_CXX14_CONSTEXPR constexpr
-#define GSL_MUTABLE_CONSTEXPR constexpr
-#define GSL_DEFAULT_CONSTEXPR constexpr
-#define GSL_CONTRACT_CONSTEXPR constexpr
+#define GSL_NOEXCEPT noexcept
 #endif
 
 #else
+#if __cplusplus >= 201102L
+#define GSL_ALIGNOF(X) alignof(X)
+
+#define GSL_CONSTEXPR constexpr
+#define GSL_NOEXCEPT noexcept
+
 #if __cplusplus >= 201402L
 #define GSL_CXX14_CONSTEXPR constexpr
 #define GSL_MUTABLE_CONSTEXPR constexpr
@@ -53,12 +58,24 @@
 #define GSL_MUTABLE_CONSTEXPR
 #define GSL_DEFAULT_CONSTEXPR
 #define GSL_CONTRACT_CONSTEXPR
-#if __cplusplus >= 201102L
-#define GSL_CONSTEXPR constexpr
+#endif
 #else
+#ifndef nullptr
+#define nullptr 0
+#endif
+#define GSL_ALIGNOF(X) boost::alignment_of<X>::value
+
 #define GSL_NO_CXX11_CONSTEXPR
 #define GSL_CONSTEXPR
-#endif
+#define GSL_NO_CXX11_CONSTEXPR
+#define GSL_NOEXCEPT
+
+#define GSL_NO_CXX14_CONSTEXPR
+#define GSL_CXX14_CONSTEXPR
+#define GSL_MUTABLE_CONSTEXPR
+#define GSL_DEFAULT_CONSTEXPR
+#define GSL_CONTRACT_CONSTEXPR
+
 #endif
 #endif // _MSC_VER
 

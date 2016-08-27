@@ -16,7 +16,11 @@
 #ifndef STDEX_ALGORIHM_H
 #define STDEX_ALGORIHM_H
 
+#if __cplusplus > 201102L
 #include <type_traits>
+#else
+#include <boost/type_traits.hpp>
+#endif
 #include <iterator>
 #include <algorithm>
 
@@ -83,7 +87,7 @@ equal(_RandomAccessIterator1 _first1, _RandomAccessIterator1 _last1,
     if ( std::distance(_first1, _last1) != std::distance(_first2, _last2))
         return false;
     return std::equal<_RandomAccessIterator1, _RandomAccessIterator2,
-                        typename std::add_lvalue_reference<_BinaryPredicate>::type>
+                        typename boost::add_lvalue_reference<_BinaryPredicate>::type>
                        (_first1, _last1, _first2, _pred );
 }
 
@@ -95,7 +99,7 @@ bool
 equal(_InputIterator1 _first1, _InputIterator1 _last1,
       _InputIterator2 _first2, _InputIterator2 _last2, _BinaryPredicate _pred )
 {
-    return stdex::detail::equal<typename std::add_lvalue_reference<_BinaryPredicate>::type>
+    return stdex::detail::equal<typename boost::add_lvalue_reference<_BinaryPredicate>::type>
        (_first1, _last1, _first2, _last2, _pred,
         typename std::iterator_traits<_InputIterator1>::iterator_category(),
         typename std::iterator_traits<_InputIterator2>::iterator_category());
