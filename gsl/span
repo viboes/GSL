@@ -397,6 +397,9 @@ namespace details
 template <class ElementType, std::ptrdiff_t Extent>
 class span
 {
+#if defined BOOST_NO_CXX11_RVALUE_REFERENCES
+  BOOST_COPYABLE_AND_MOVABLE(span)
+#endif
 public:
     // constants and types
     typedef ElementType element_type;
@@ -490,14 +493,10 @@ public:
     }
 
     BOOST_DEFAULTED_FUNCTION( GSL_CONSTEXPR span(const span& other) GSL_NOEXCEPT, 
-    : storage_(other.storage_){});
-#ifndef GSL_MSVC_NO_DEFAULT_MOVE_CTOR
-//fixme
-#if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
-    BOOST_DEFAULTED_FUNCTION( GSL_CONSTEXPR span(span&& other) GSL_NOEXCEPT, {});
-#endif
-#else
-    GSL_CONSTEXPR span(span&& other) GSL_NOEXCEPT : storage_(boost::move(other.storage_)) {}
+      : storage_(other.storage_){});
+#if defined BOOST_NO_CXX11_RVALUE_REFERENCES      
+    GSL_CONSTEXPR span( BOOST_RV_REF(span) other) GSL_NOEXCEPT 
+      : storage_(boost::move(other.storage_)) {}
 #endif
 
     template <
@@ -511,14 +510,15 @@ public:
     {
     }
 
-//fixme
-#if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
+#if defined BOOST_NO_CXX11_RVALUE_REFERENCES      
     template <
-        class OtherElementType, std::ptrdiff_t OtherExtent,
-        class = typename boost::enable_if_c<
+        class OtherElementType, std::ptrdiff_t OtherExtent>
+    GSL_CONSTEXPR span( BOOST_RV_REF_BEG span<OtherElementType, OtherExtent> BOOST_RV_REF_END other,
+          typename boost::enable_if_c<
             details::is_allowed_extent_conversion<OtherExtent, Extent>::value &&
-            details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>::type >
-    GSL_CONSTEXPR span(span<OtherElementType, OtherExtent>&& other)
+            details::is_allowed_element_type_conversion<OtherElementType, element_type>::value
+          >::type* = 0
+        )
         : storage_(reinterpret_cast<pointer>(other.data()),
                    details::extent_type<OtherExtent>(other.size()))
     {
@@ -526,23 +526,25 @@ public:
 #endif
 
     BOOST_DEFAULTED_FUNCTION( ~span() GSL_NOEXCEPT, {});
-    BOOST_DEFAULTED_FUNCTION ( GSL_DEFAULT_CONSTEXPR span& operator=(const span& other) GSL_NOEXCEPT, {
+    
+#if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
+    GSL_DEFAULT_CONSTEXPR span& operator=( const span& other) GSL_NOEXCEPT {
       storage_= other.storage_;
       return *this;
-    });
-
-//fixme
-#if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
-#ifndef GSL_MSVC_NO_DEFAULT_MOVE_CTOR
-    BOOST_DEFAULTED_FUNCTION( GSL_DEFAULT_CONSTEXPR span& operator=(span&& other) GSL_NOEXCEPT, {});
+    };
 #else
-    GSL_CONSTEXPR span& operator=(span&& other) GSL_NOEXCEPT
+    GSL_DEFAULT_CONSTEXPR span& operator=( BOOST_COPY_ASSIGN_REF(span) other) GSL_NOEXCEPT {
+      storage_= other.storage_;
+      return *this;
+    };
+#endif
+
+    GSL_CONSTEXPR span& operator=(BOOST_RV_REF(span) other) GSL_NOEXCEPT
     {
         storage_ = boost::move(other.storage_);
         return *this;
     }
-#endif
-#endif
+    
     // [span.sub], span subviews
     template <std::ptrdiff_t Count>
     GSL_CONTRACT_CONSTEXPR span<element_type, Count> first() const
