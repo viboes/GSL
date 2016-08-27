@@ -492,8 +492,8 @@ public:
     {
     }
 
-    BOOST_DEFAULTED_FUNCTION( GSL_CONSTEXPR span(const span& other) GSL_NOEXCEPT, 
-      : storage_(other.storage_){});
+    GSL_CONSTEXPR span(const span& other) GSL_NOEXCEPT 
+      : storage_(other.storage_){};
 #if defined BOOST_NO_CXX11_RVALUE_REFERENCES      
     GSL_CONSTEXPR span( BOOST_RV_REF(span) other) GSL_NOEXCEPT 
       : storage_(boost::move(other.storage_)) {}
@@ -525,7 +525,7 @@ public:
     }
 #endif
 
-    BOOST_DEFAULTED_FUNCTION( ~span() GSL_NOEXCEPT, {});
+    ~span() GSL_NOEXCEPT {};
     
 #if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
     GSL_DEFAULT_CONSTEXPR span& operator=( const span& other) GSL_NOEXCEPT {
