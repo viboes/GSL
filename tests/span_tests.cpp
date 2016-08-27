@@ -26,6 +26,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <boost/container/vector.hpp>
 #include <regex>
 
 using namespace std;
@@ -40,6 +41,45 @@ struct DerivedClass : BaseClass
 {
 };
 }
+
+
+span<int> get_temp_span(int (&arr)[3])  { return span<int>(&arr[1], 2); }
+
+void use_span(span<const int> s, int (&arr)[3]) { CHECK(s.length() == 2 && s.data() == &arr[1]); }
+
+void workaround_macro(int* p) { span<int> s(p, 2); }
+
+boost::array<int, 4> get_an_array()  {
+  boost::array<int, 4> arr;
+  arr[0] = 1;
+  arr[1] = 2;
+  arr[2] = 3;
+  arr[3] = 4;
+  return arr;
+}
+void take_a_span(span<const int> s) { static_cast<void>(s); };
+
+std::vector<int> get_temp_vector() { return std::vector<int>(); };
+boost::container::vector<int> get_temp_boost_vector() { return boost::container::vector<int>(); };
+
+void use_span(span<const int> s) { static_cast<void>(s); };
+
+
+void f1 (span<int> & s) {
+    span<int, 2> s2 = s;
+    static_cast<void>(s2);
+};
+
+void f2(int (&arr2)[2]) {
+    span<int, 4> s4(arr2, 2);
+    static_cast<void>(s4);
+};
+
+void f3(span<int> &av) {
+    span<int, 4> s4 = av;
+    static_cast<void>(s4);
+};
+
 
 SUITE(span_tests)
 {
@@ -210,13 +250,10 @@ SUITE(span_tests)
             CHECK(s.length() == 0 && s.data() == nullptr);
         }
 
-#if __cplusplus >= 201102L
         {
             int* p = nullptr;
-            auto workaround_macro = [=]() { span<int> s{p, 2}; };
-            CHECK_THROW(workaround_macro(), fail_fast);
+            CHECK_THROW(workaround_macro(p), fail_fast);
         }
-#endif
     }
 
     TEST(from_pointer_pointer_constructor)
@@ -415,14 +452,10 @@ SUITE(span_tests)
         }
 #endif
 
-#if __cplusplus >= 201102L
         {
-            auto get_an_array = []() -> boost::array<int, 4> { return { 1, 2, 3, 4 }; };
-            auto take_a_span = [](span<const int> s) { static_cast<void>(s); };
             // try to take a temporary boost::array
             take_a_span(get_an_array());
         }
-#endif
     }
 
     TEST(from_const_std_array_constructor)
@@ -496,17 +529,12 @@ SUITE(span_tests)
 #endif
     }
 
-//#if __cplusplus >= 201102L
     TEST(from_container_constructor)
     {
-#if __cplusplus >= 201102L
-        std::vector<int> v = {1, 2, 3};
-#else
         std::vector<int> v(3);
-        v[0]=1;
-        v[1]=2;
-        v[2]=3;
-#endif
+        v.push_back(1);
+        v.push_back(2);
+        v.push_back(3);
         const std::vector<int> cv = v;
 
         {
@@ -546,13 +574,13 @@ SUITE(span_tests)
 #endif
         }
 
-#if __cplusplus >= 201102L
         {
-            auto get_temp_vector = []() -> std::vector<int> { return{}; };
-            auto use_span = [](span<const int> s) { static_cast<void>(s); };
             use_span(get_temp_vector());
         }
-#endif
+
+        {
+            use_span(get_temp_boost_vector());
+        }
 
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
@@ -562,6 +590,7 @@ SUITE(span_tests)
 #endif
         }
 
+// fixme RVALUE + LAMBDA
 #if __cplusplus >= 201102L
         {
             auto get_temp_string = []() -> std::string { return {}; };
@@ -631,6 +660,26 @@ SUITE(span_tests)
         }
     }
 
+    TEST(assignment)
+    {
+        span<int> s1;
+        CHECK(s1.empty());
+
+        int arr[] = {3, 4, 5};
+
+        span<int> s2 = arr;
+        CHECK(s2.length() == 3 && s2.data() == &arr[0]);
+
+        s2 = s1;
+        CHECK(s2.empty());
+
+        use_span(get_temp_span(arr), arr);
+
+        s1 = get_temp_span(arr);
+        CHECK(s1.length() == 2 && s1.data() == &arr[1]);
+
+    }
+#if __cplusplus >= 201102L
     TEST(copy_move_and_assignment)
     {
         span<int> s1;
@@ -641,19 +690,15 @@ SUITE(span_tests)
         span<const int> s2 = arr;
         CHECK(s2.length() == 3 && s2.data() == &arr[0]);
 
-        s2 = s1;
+        s2 = s1; // compile fails
         CHECK(s2.empty());
 
-#if __cplusplus >= 201102L
-        auto get_temp_span = [&]() -> span<int> { return {&arr[1], 2}; };
-        auto use_span = [&](span<const int> s) { CHECK(s.length() == 2 && s.data() == &arr[1]); };
-        use_span(get_temp_span());
+        use_span(get_temp_span(arr), arr);
 
-        s1 = get_temp_span();
+        s1 = get_temp_span(arr);
         CHECK(s1.length() == 2 && s1.data() == &arr[1]);
-#endif
     }
-
+#endif
     TEST(first)
     {
         int arr[5] = {1, 2, 3, 4, 5};
@@ -950,12 +995,12 @@ SUITE(span_tests)
             CHECK(it == beyond);
             CHECK(it - beyond == 0);
 
-#if __cplusplus >= 201102L
-            for (auto& n : s)
+            it = first;
+            while (it != s.end())
             {
-                CHECK(n == 5);
+                CHECK(*it == 5);
+                ++it;
             }
-#endif
         }
     }
 
@@ -1050,12 +1095,13 @@ SUITE(span_tests)
             CHECK(it == beyond);
             CHECK(it - beyond == 0);
 
-#if __cplusplus >= 201102L
-            for (auto& n : s)
+            it = first;
+            CHECK(it == first);
+            while (it != s.rend())
             {
-                CHECK(n == 5);
+                CHECK(*it == 5);
+                ++it;
             }
-#endif
         }
     }
 
@@ -1311,16 +1357,10 @@ SUITE(span_tests)
 #endif
 
         // even when done dynamically
-#if __cplusplus >= 201102L
         {
             span<int> s = arr;
-            auto f = [&]() {
-                span<int, 2> s2 = s;
-                static_cast<void>(s2);
-            };
-            CHECK_THROW(f(), fail_fast);
+            CHECK_THROW(f1(s), fail_fast);
         }
-#endif
         // but doing so explicitly is ok
 
         // you can convert statically
@@ -1340,7 +1380,6 @@ SUITE(span_tests)
             static_cast<void>(s1);
         }
 
-#if __cplusplus >= 201102L
         // initialization or assignment to static span that requires size INCREASE is not ok.
         int arr2[2] = {1, 2};
 
@@ -1354,21 +1393,12 @@ SUITE(span_tests)
         }
 #endif
         {
-            auto f = [&]() {
-                span<int, 4> s4 = {arr2, 2};
-                static_cast<void>(s4);
-            };
-            CHECK_THROW(f(), fail_fast);
+            CHECK_THROW(f2(arr2), fail_fast);
         }
 
         // this should fail - we are trying to assign a small dynamic span to a fixed_size larger one
         span<int> av = arr2;
-        auto f = [&]() {
-            span<int, 4> s4 = av;
-            static_cast<void>(s4);
-        };
-        CHECK_THROW(f(), fail_fast);
-#endif
+        CHECK_THROW(f3(av), fail_fast);
     }
 
     TEST(interop_with_std_regex)
