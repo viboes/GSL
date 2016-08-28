@@ -17,6 +17,7 @@
 #include <UnitTest++/UnitTest++.h>
 #include <gsl/gsl>
 #include <vector>
+#include <boost/assign/list_of.hpp> // for 'list_of()'
 #if ! defined BOOST_NO_CXX11_HDR_INITIALIZER_LIST
 #include <initializer_list>
 #endif
@@ -46,16 +47,17 @@ SUITE(at_tests)
         CHECK_THROW(at(a, 4), fail_fast);
     }
 
-#if __cplusplus >= 201102L
     TEST(StdVector)
     {
-        std::vector<int> a = { 1, 2, 3, 4 };
+      using namespace boost::assign;
+        std::vector<int> a = list_of(1)(2)(3)(4);
 
         for (int i = 0; i < 4; ++i)
             CHECK(at(a, i) == i+1);
 
         CHECK_THROW(at(a, 4), fail_fast);
     }
+#if __cplusplus >= 201102L
 
     TEST(InitializerList)
     {
