@@ -20,42 +20,50 @@
 
 using namespace gsl;
 
+void f(int& i)
+{
+    i += 1;
+}
+
+struct F {
+  int& i;
+  F(int& i) : i(i) {}
+  void operator()() {f(i);}
+};
+
 SUITE(utils_tests)
 {
-    void f(int& i)
-    {
-        i += 1;
-    }
 
-#if __cplusplus >= 201102L
-    TEST(finally_lambda)
+    TEST(finally_functor)
     {
         int i = 0;
         {
-            auto _ = finally([&]() {f(i);});
+            final_act<F> _= finally(F(i));
             CHECK(i == 0);
         }
         CHECK(i == 1);
     }
 
-    TEST(finally_lambda_move)
+
+    TEST(finally_functor_move)
     {
         int i = 0;
         {
-            auto _1 = finally([&]() {f(i);});
+            final_act<F> _1 = finally(F(i));
             {
-                auto _2 = std::move(_1);
+                final_act<F> _2 = boost::move(_1);
                 CHECK(i == 0);
             }
             CHECK(i == 1);
             {
-                auto _2 = std::move(_1);
+                final_act<F> _2 = boost::move(_1);
                 CHECK(i == 1);
             }
             CHECK(i == 1);
         }
         CHECK(i == 1);
     }
+#if __cplusplus >= 201102L
     TEST(finally_function_with_bind)
     {
         int i = 0;
@@ -65,19 +73,18 @@ SUITE(utils_tests)
         }
         CHECK(i == 1);
     }
-
+#endif
     int j = 0;
     void g() { j += 1; };
     TEST(finally_function_ptr)
     {
         j = 0;
         {
-            auto _ = finally(&g);
+            final_act<void(*)()> _ = finally(&g);
             CHECK(j == 0);
         }
         CHECK(j == 1);
     }
-#endif
 
     TEST(narrow_cast)
     {

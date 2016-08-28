@@ -22,17 +22,9 @@
 #include "gsl_config.hpp"
 
 #include "gsl_assert" // Ensures/Expects
-#if __cplusplus > 201102L
-#include <array>
-#else
 #include <boost/array.hpp>
-#endif
 #include <exception>
-#if __cplusplus > 201102L
-#include <type_traits>
-#else
 #include <boost/type_traits.hpp>
-#endif
 #include <utility>
 #include <boost/move/move.hpp>
 
@@ -69,19 +61,21 @@ namespace gsl
 template <class F>
 class final_act
 {
+  BOOST_MOVABLE_BUT_NOT_COPYABLE(final_act)
 public:
     explicit final_act(F f) GSL_NOEXCEPT : f_(boost::move(f)), invoke_(true) {}
 
-// fixme
-#if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
-
-    final_act(final_act&& other) GSL_NOEXCEPT : f_(boost::move(other.f_)), invoke_(other.invoke_)
+    final_act(BOOST_RV_REF(final_act) other) GSL_NOEXCEPT : f_(boost::move(other.f_)), invoke_(other.invoke_)
     {
-        other.invoke_ = false;
+      other.invoke_ = false;
     }
-#endif
-    BOOST_DELETED_FUNCTION( final_act(const final_act&) );
-    BOOST_DELETED_FUNCTION( final_act& operator=(const final_act&) );
+    final_act& operator=(BOOST_RV_REF(final_act) other) // Move assign
+    {
+      f_= boost::move(other.f_); 
+      invoke_ =other.invoke_;
+      other.invoke_ = false;
+      return *this;
+   }    
 
     ~final_act() GSL_NOEXCEPT
     {
@@ -95,19 +89,11 @@ private:
 
 // finally() - convenience function to generate a final_act
 template <class F>
-inline final_act<F> finally(const F& f) GSL_NOEXCEPT
+inline final_act<F> finally(BOOST_FWD_REF(F) f) GSL_NOEXCEPT
 {
-    return final_act<F>(f);
+    final_act<F> res(boost::forward<F>(f));
+    return BOOST_MOVE_RET(final_act<F>, res);
 }
-
-// fixme
-#if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
-template <class F>
-inline final_act<F> finally(F&& f) GSL_NOEXCEPT
-{
-    return final_act<F>(boost::forward<F>(f));
-}
-#endif
 
 // narrow_cast(): a searchable way to do narrowing casts of values
 template <class T, class U>
