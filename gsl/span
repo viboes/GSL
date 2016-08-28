@@ -30,20 +30,12 @@
 #include "gsl_assert"
 #include "gsl_byte"
 #include "gsl_util"
-#if __cplusplus > 201102L
-#include <array>
-#else
 #include <boost/array.hpp>
-#endif
 
 #include <iterator>
 #include <limits>
 #include <stdexcept>
-#if __cplusplus > 201102L
-#include <type_traits>
-#else
 #include <boost/type_traits.hpp>
-#endif
 #include <utility>
 #include <boost/move/move.hpp>
 
@@ -197,11 +189,7 @@ namespace details
         typedef typename boost::add_lvalue_reference<value_type>::type reference;
 
         GSL_CONSTEXPR span_iterator() GSL_NOEXCEPT
-#if __cplusplus > 201102L
-         : span_iterator(nullptr, 0) {}
-#else
             : span_(0), index_(0) {}
-#endif         
 
         GSL_CONTRACT_CONSTEXPR span_iterator(const Span* span, typename Span::index_type index)
             : span_(span), index_(index)
@@ -211,13 +199,7 @@ namespace details
 
         friend class span_iterator<Span, true>;
         GSL_CONSTEXPR span_iterator(const span_iterator<Span, false>& other) GSL_NOEXCEPT
-#if __cplusplus > 201102L
-            : span_iterator(other.span_, other.index_)
-        {
-        }
-#else
             : span_(other.span_), index_(other.index_) {}
-#endif         
 
         GSL_CONTRACT_CONSTEXPR reference operator*() const
         {
@@ -397,9 +379,7 @@ namespace details
 template <class ElementType, std::ptrdiff_t Extent>
 class span
 {
-#if defined BOOST_NO_CXX11_RVALUE_REFERENCES
   BOOST_COPYABLE_AND_MOVABLE(span)
-#endif
 public:
     // constants and types
     typedef ElementType element_type;
@@ -494,10 +474,8 @@ public:
 
     GSL_CONSTEXPR span(const span& other) GSL_NOEXCEPT 
       : storage_(other.storage_){};
-#if defined BOOST_NO_CXX11_RVALUE_REFERENCES      
     GSL_CONSTEXPR span( BOOST_RV_REF(span) other) GSL_NOEXCEPT 
       : storage_(boost::move(other.storage_)) {}
-#endif
 
     template <
         class OtherElementType, std::ptrdiff_t OtherExtent>
@@ -510,7 +488,6 @@ public:
     {
     }
 
-#if defined BOOST_NO_CXX11_RVALUE_REFERENCES      
     template <
         class OtherElementType, std::ptrdiff_t OtherExtent>
     GSL_CONSTEXPR span( BOOST_RV_REF_BEG span<OtherElementType, OtherExtent> BOOST_RV_REF_END other,
@@ -523,21 +500,13 @@ public:
                    details::extent_type<OtherExtent>(other.size()))
     {
     }
-#endif
 
     ~span() GSL_NOEXCEPT {};
     
-#if ! defined BOOST_NO_CXX11_RVALUE_REFERENCES
-    GSL_DEFAULT_CONSTEXPR span& operator=( const span& other) GSL_NOEXCEPT {
-      storage_= other.storage_;
-      return *this;
-    };
-#else
     GSL_DEFAULT_CONSTEXPR span& operator=( BOOST_COPY_ASSIGN_REF(span) other) GSL_NOEXCEPT {
       storage_= other.storage_;
       return *this;
     };
-#endif
 
     GSL_CONSTEXPR span& operator=(BOOST_RV_REF(span) other) GSL_NOEXCEPT
     {
