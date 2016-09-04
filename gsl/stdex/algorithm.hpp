@@ -16,11 +16,6 @@
 #ifndef STDEX_ALGORIHM_H
 #define STDEX_ALGORIHM_H
 
-#if __cplusplus > 201102L
-#include <type_traits>
-#else
-#include <boost/type_traits.hpp>
-#endif
 #include <iterator>
 #include <algorithm>
 

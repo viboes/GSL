@@ -20,11 +20,11 @@
 #ifndef STDEX_TYPE_TRAITS_H
 #define STDEX_TYPE_TRAITS_H
 
-#if __cplusplus > 201102L
-#include <type_traits>
-#else
+//#if __cplusplus > 201102L
+//#include <type_traits>
+//#else
 #include <boost/type_traits.hpp>
-#endif
+//#endif
 namespace stdex
 {
 #if __cplusplus > 201102L

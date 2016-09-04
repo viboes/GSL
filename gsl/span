@@ -447,7 +447,7 @@ public:
 #if ! defined BOOST_NO_CXX11_DECLTYPE
                   &&
                   boost::is_convertible<typename Container::pointer,
-                                      decltype(boost::declval<Container>().data())>::value> 
+                                      decltype(boost::declval<Container>().data())>::value 
 #endif                                      
                       >::type* = 0
 
@@ -465,7 +465,7 @@ public:
 #if ! defined BOOST_NO_CXX11_DECLTYPE
                   &&
                   boost::is_convertible<typename Container::pointer,
-                                      decltype(boost::declval<Container>().data())>::value> 
+                                      decltype(boost::declval<Container>().data())>::value 
 #endif                                      
                       >::type * = 0    
     ) : storage_(cont.data(), cont.size())
@@ -508,7 +508,7 @@ public:
       return *this;
     };
 
-    GSL_CONSTEXPR span& operator=(BOOST_RV_REF(span) other) GSL_NOEXCEPT
+    GSL_MUTABLE_CONSTEXPR span& operator=(BOOST_RV_REF(span) other) GSL_NOEXCEPT
     {
         storage_ = boost::move(other.storage_);
         return *this;
