@@ -70,11 +70,19 @@ using boost::shared_ptr;
 #if ! defined BOOST_NO_CXX11_TEMPLATE_ALIASES
 template <class T>
 using owner = T;
+
+#define GSL_OWNER(T) ::gsl::owner<T>
+#define GSL_OWNER_T(T) ::gsl::owner<T>
+
 #else
 template <class T>
 struct owner {
   typedef T type;
 };
+
+#define GSL_OWNER(T) ::gsl::owner<T>::type
+#define GSL_OWNER_T(T) typename ::gsl::owner<T>::type
+
 #endif
 //
 // not_null

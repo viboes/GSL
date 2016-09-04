@@ -29,11 +29,7 @@ SUITE(owner_tests)
 
     TEST(basic_test)
     {
-#if ! defined BOOST_NO_CXX11_TEMPLATE_ALIASES
-        owner<int*> p = new int(120);
-#else
-        owner<int*>::type p = new int(120);
-#endif
+        GSL_OWNER(int*) p = new int(120);
         CHECK(*p == 120);
         f(p);
         CHECK(*p == 121);
