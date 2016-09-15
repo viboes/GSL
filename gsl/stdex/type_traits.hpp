@@ -20,15 +20,10 @@
 #ifndef STDEX_TYPE_TRAITS_H
 #define STDEX_TYPE_TRAITS_H
 
-//#if __cplusplus > 201102L
-//#include <type_traits>
-//#else
 #include <boost/type_traits.hpp>
-//#endif
 namespace stdex
 {
 #if __cplusplus > 201102L
-
 
 template <bool B, class T=void>
 using  enable_if_t = typename std::enable_if<B,T>::type;

@@ -27,13 +27,9 @@
 
 #include "gsl_assert"  // Ensures/Expects
 #include "gsl_util"    // finally()/narrow()/narrow_cast()...
-#if __cplusplus >= 201102L
 #include "multi_span"  // multi_span, strided_span...
-#endif
 #include "span"        // span
-#if __cplusplus >= 201102L
 #include "string_span" // zstring, string_span, zstring_builder...
-#endif
 #include <memory>
 #include <boost/functional/hash.hpp>
 
@@ -101,7 +97,7 @@ struct owner {
 template <class T>
 class not_null
 {
-#if ! defined BOOST_NO_CXX11_NULLPTR
+#if __cplusplus >= 201102L
 // fixme: Why it is not assignable?
     BOOST_STATIC_ASSERT_MSG((boost::is_assignable<T&, stdex::nullptr_t>::value), "T cannot be assigned nullptr.");
 #else

@@ -15,7 +15,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <UnitTest++/UnitTest++.h>
-#if __cplusplus >= 201102L
 #include <gsl/multi_span>
 
 #include <iostream>
@@ -45,125 +44,125 @@ SUITE(multi_span_tests)
     {
         {
             multi_span<int> s;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
             multi_span<const int> cs;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
             multi_span<int, 0> s;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
             multi_span<const int, 0> cs;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
             multi_span<int, 1> s;
-            CHECK(s.length() == 1 && s.data() == nullptr); // explains why it can't compile
+            CHECK(s.length() == 1 && s.data() == NULLPTR); // explains why it can't compile
 #endif
         }
 
         {
             multi_span<int> s{};
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
             multi_span<const int> cs{};
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
     }
 
     TEST(from_nullptr_constructor)
     {
         {
-            multi_span<int> s = nullptr;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            multi_span<int> s = NULLPTR;
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            multi_span<const int> cs = nullptr;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            multi_span<const int> cs = NULLPTR;
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
-            multi_span<int, 0> s = nullptr;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            multi_span<int, 0> s = NULLPTR;
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            multi_span<const int, 0> cs = nullptr;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            multi_span<const int, 0> cs = NULLPTR;
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
-            multi_span<int, 1> s = nullptr;
-            CHECK(s.length() == 1 && s.data() == nullptr); // explains why it can't compile
+            multi_span<int, 1> s = NULLPTR;
+            CHECK(s.length() == 1 && s.data() == NULLPTR); // explains why it can't compile
 #endif
         }
 
         {
-            multi_span<int> s{nullptr};
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            multi_span<int> s{NULLPTR};
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            multi_span<const int> cs{nullptr};
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            multi_span<const int> cs{NULLPTR};
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
-            multi_span<int*> s{nullptr};
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            multi_span<int*> s{NULLPTR};
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            multi_span<const int*> cs{nullptr};
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            multi_span<const int*> cs{NULLPTR};
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
     }
 
     TEST(from_nullptr_length_constructor)
     {
         {
-            multi_span<int> s{nullptr, 0};
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            multi_span<int> s{NULLPTR, 0};
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            multi_span<const int> cs{nullptr, 0};
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            multi_span<const int> cs{NULLPTR, 0};
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
-            multi_span<int, 0> s{nullptr, 0};
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            multi_span<int, 0> s{NULLPTR, 0};
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            multi_span<const int, 0> cs{nullptr, 0};
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            multi_span<const int, 0> cs{NULLPTR, 0};
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
-            multi_span<int, 1> s{nullptr, 0};
-            CHECK(s.length() == 1 && s.data() == nullptr); // explains why it can't compile
+            multi_span<int, 1> s{NULLPTR, 0};
+            CHECK(s.length() == 1 && s.data() == NULLPTR); // explains why it can't compile
 #endif
         }
 
         {
-            auto workaround_macro = []() { multi_span<int> s{nullptr, 1}; };
+            auto workaround_macro = []() { multi_span<int> s{NULLPTR, 1}; };
             CHECK_THROW(workaround_macro(), fail_fast);
 
-            auto const_workaround_macro = []() { multi_span<const int> cs{nullptr, 1}; };
+            auto const_workaround_macro = []() { multi_span<const int> cs{NULLPTR, 1}; };
             CHECK_THROW(const_workaround_macro(), fail_fast);
         }
 
         {
-            auto workaround_macro = []() { multi_span<int, 0> s{nullptr, 1}; };
+            auto workaround_macro = []() { multi_span<int, 0> s{NULLPTR, 1}; };
             CHECK_THROW(workaround_macro(), fail_fast);
 
-            auto const_workaround_macro = []() { multi_span<const int, 0> s{nullptr, 1}; };
+            auto const_workaround_macro = []() { multi_span<const int, 0> s{NULLPTR, 1}; };
             CHECK_THROW(const_workaround_macro(), fail_fast);
         }
 
         {
-            multi_span<int*> s{nullptr, 0};
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            multi_span<int*> s{NULLPTR, 0};
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            multi_span<const int*> cs{nullptr, 0};
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            multi_span<const int*> cs{NULLPTR, 0};
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
     }
 
@@ -234,13 +233,13 @@ SUITE(multi_span_tests)
         }
 
         {
-            int* p = nullptr;
+            int* p = NULLPTR;
             multi_span<int> s{p, 0};
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
         }
 
         {
-            int* p = nullptr;
+            int* p = NULLPTR;
             auto workaround_macro = [=]() { multi_span<int> s{p, 2}; };
             CHECK_THROW(workaround_macro(), fail_fast);
         }
@@ -278,19 +277,19 @@ SUITE(multi_span_tests)
         }
 
         {
-            int* p = nullptr;
+            int* p = NULLPTR;
             auto workaround_macro = [&]() { multi_span<int> s{&arr[0], p}; };
             CHECK_THROW(workaround_macro(), fail_fast);
         }
 
         {
-            int* p = nullptr;
+            int* p = NULLPTR;
             auto workaround_macro = [&]() { multi_span<int> s{p, p}; };
             CHECK_THROW(workaround_macro(), fail_fast);
         }
 
         {
-            int* p = nullptr;
+            int* p = NULLPTR;
             auto workaround_macro = [&]() { multi_span<int> s{&arr[0], p}; };
             CHECK_THROW(workaround_macro(), fail_fast);
         }
@@ -631,9 +630,9 @@ SUITE(multi_span_tests)
     TEST(from_convertible_span_constructor)
     {
 #ifdef CONFIRM_COMPILATION_ERRORS
-        multi_span<int, 7, 4, 2> av1(nullptr, b1);
+        multi_span<int, 7, 4, 2> av1(NULLPTR, b1);
 
-        auto f = [&]() { multi_span<int, 7, 4, 2> av1(nullptr); };
+        auto f = [&]() { multi_span<int, 7, 4, 2> av1(NULLPTR); };
         CHECK_THROW(f(), fail_fast);
 #endif
 
@@ -642,7 +641,7 @@ SUITE(multi_span_tests)
         b12 = b11;
         b11 = b12;
 
-        multi_span<int, dynamic_range> av1 = nullptr;
+        multi_span<int, dynamic_range> av1 = NULLPTR;
         multi_span<int, 7, dynamic_range, 2> av2(av1);
         multi_span<int, 7, 4, 2> av2(av1);
 #endif
@@ -960,8 +959,8 @@ SUITE(multi_span_tests)
         }
 
         {
-            auto s1 = nullptr;
-            auto s2 = nullptr;
+            auto s1 = NULLPTR;
+            auto s2 = NULLPTR;
             CHECK(s1 == s2);
             CHECK(!(s1 != s2));
             CHECK(!(s1 < s2));
@@ -979,7 +978,7 @@ SUITE(multi_span_tests)
         {
             int arr[] = {2, 1}; // bigger
 
-            multi_span<int> s1 = nullptr;
+            multi_span<int> s1 = NULLPTR;
             multi_span<int> s2 = arr;
 
             CHECK(s1 != s2);
@@ -1219,7 +1218,7 @@ SUITE(multi_span_tests)
     TEST(empty_spans)
     {
         {
-            multi_span<int, 0> empty_av(nullptr);
+            multi_span<int, 0> empty_av(NULLPTR);
 
             CHECK(empty_av.bounds().index_bounds() == index<1>{0});
             CHECK_THROW(empty_av[0], fail_fast);
@@ -1676,6 +1675,5 @@ SUITE(multi_span_tests)
         }
     }
 }
-#endif
 
 int main(int, const char* []) { return UnitTest::RunAllTests(); }

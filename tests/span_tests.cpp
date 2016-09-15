@@ -29,11 +29,6 @@
 #include <boost/container/vector.hpp>
 #include <regex>
 
-//todo: replace nullptr by NULLPTR in the code
-#if __cplusplus <= 199711L
-#define nullptr NULLPTR
-#endif
-
 using namespace std;
 using namespace gsl;
 
@@ -92,33 +87,33 @@ SUITE(span_tests)
     {
         {
             span<int> s;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
             span<const int> cs;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
             span<int, 0> s;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
             span<const int, 0> cs;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
             span<int, 1> s;
-            CHECK(s.length() == 1 && s.data() == nullptr); // explains why it can't compile
+            CHECK(s.length() == 1 && s.data() == NULLPTR); // explains why it can't compile
 #endif
         }
 
         {
             span<int> s;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
             span<const int> cs;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
     }
 
@@ -137,99 +132,99 @@ SUITE(span_tests)
     TEST(from_nullptr_constructor)
     {
         {
-            //span<int> s = nullptr;
+            //span<int> s = NULLPTR;
             span<int> s;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            //span<const int> cs = nullptr;
+            //span<const int> cs = NULLPTR;
             span<const int> cs;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
-            //span<int, 0> s = nullptr;
+            //span<int, 0> s = NULLPTR;
             span<int, 0> s;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            //span<const int, 0> cs = nullptr;
+            //span<const int, 0> cs = NULLPTR;
             span<const int, 0> cs;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
-            span<int, 1> s = nullptr;
-            CHECK(s.length() == 1 && s.data() == nullptr); // explains why it can't compile
+            span<int, 1> s = NULLPTR;
+            CHECK(s.length() == 1 && s.data() == NULLPTR); // explains why it can't compile
 #endif
         }
 
         {
-            //span<int> s(nullptr);
+            //span<int> s(NULLPTR);
             span<int> s;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            //span<const int> cs(nullptr);
+            //span<const int> cs(NULLPTR);
             span<const int> cs;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
-            //span<int*> s(nullptr);
+            //span<int*> s(NULLPTR);
             span<int*> s;
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            //span<const int*> cs(nullptr);
+            //span<const int*> cs(NULLPTR);
             span<const int*> cs;
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
     }
 
     TEST(from_nullptr_length_constructor)
     {
         {
-            span<int> s(nullptr, static_cast<span<int>::index_type>(0));
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            span<int> s(NULLPTR, static_cast<span<int>::index_type>(0));
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            span<const int> cs(nullptr, static_cast<span<int>::index_type>(0));
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            span<const int> cs(NULLPTR, static_cast<span<int>::index_type>(0));
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
         {
-            span<int, 0> s(nullptr, static_cast<span<int>::index_type>(0));
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            span<int, 0> s(NULLPTR, static_cast<span<int>::index_type>(0));
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            span<const int, 0> cs(nullptr, static_cast<span<int>::index_type>(0));
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            span<const int, 0> cs(NULLPTR, static_cast<span<int>::index_type>(0));
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
 
 #if __cplusplus >= 201102L
         {
-            auto workaround_macro = []() { span<int, 1> s{ nullptr, static_cast<span<int>::index_type>(0) }; };
+            auto workaround_macro = []() { span<int, 1> s{ NULLPTR, static_cast<span<int>::index_type>(0) }; };
             CHECK_THROW(workaround_macro(), fail_fast);
         }
 
         {
-            auto workaround_macro = []() { span<int> s{nullptr, 1}; };
+            auto workaround_macro = []() { span<int> s{NULLPTR, 1}; };
             CHECK_THROW(workaround_macro(), fail_fast);
 
-            auto const_workaround_macro = []() { span<const int> cs{nullptr, 1}; };
+            auto const_workaround_macro = []() { span<const int> cs{NULLPTR, 1}; };
             CHECK_THROW(const_workaround_macro(), fail_fast);
         }
 
         {
-            auto workaround_macro = []() { span<int, 0> s{nullptr, 1}; };
+            auto workaround_macro = []() { span<int, 0> s{NULLPTR, 1}; };
             CHECK_THROW(workaround_macro(), fail_fast);
 
-            auto const_workaround_macro = []() { span<const int, 0> s{nullptr, 1}; };
+            auto const_workaround_macro = []() { span<const int, 0> s{NULLPTR, 1}; };
             CHECK_THROW(const_workaround_macro(), fail_fast);
         }
 #endif
         {
-            span<int*> s(nullptr, static_cast<span<int>::index_type>(0));
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            span<int*> s(NULLPTR, static_cast<span<int>::index_type>(0));
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
 
-            span<const int*> cs(nullptr, static_cast<span<int>::index_type>(0));
-            CHECK(cs.length() == 0 && cs.data() == nullptr);
+            span<const int*> cs(NULLPTR, static_cast<span<int>::index_type>(0));
+            CHECK(cs.length() == 0 && cs.data() == NULLPTR);
         }
     }
 
@@ -250,13 +245,13 @@ SUITE(span_tests)
         }
 
         {
-            int* p = nullptr;
+            int* p = NULLPTR;
             span<int> s(p, static_cast<span<int>::index_type>(0));
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
         }
 
         {
-            int* p = nullptr;
+            int* p = NULLPTR;
             CHECK_THROW(workaround_macro(p), fail_fast);
         }
     }
@@ -295,26 +290,26 @@ SUITE(span_tests)
 
         // this will fail the std::distance() precondition, which asserts on MSVC debug builds
         //{
-        //    int* p = nullptr;
+        //    int* p = NULLPTR;
         //    auto workaround_macro = [&]() { span<int> s{&arr[0], p}; };
         //    CHECK_THROW(workaround_macro(), fail_fast);
         //}
 
         {
-            int* p = nullptr;
+            int* p = NULLPTR;
             span<int> s( p, p );
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
         }
 
         {
-            int* p = nullptr;
+            int* p = NULLPTR;
             span<int, 0> s( p, p );
-            CHECK(s.length() == 0 && s.data() == nullptr);
+            CHECK(s.length() == 0 && s.data() == NULLPTR);
         }
 
         // this will fail the std::distance() precondition, which asserts on MSVC debug builds
         //{
-        //    int* p = nullptr;
+        //    int* p = NULLPTR;
         //    auto workaround_macro = [&]() { span<int> s{&arr[0], p}; };
         //    CHECK_THROW(workaround_macro(), fail_fast);
         //}
@@ -1153,8 +1148,8 @@ SUITE(span_tests)
     TEST(comparison_operators)
     {
         {
-            //span<int> s1 = nullptr;
-            //span<int> s2 = nullptr;
+            //span<int> s1 = NULLPTR;
+            //span<int> s2 = NULLPTR;
             span<int> s1;
             span<int> s2;
             CHECK(s1 == s2);
@@ -1193,7 +1188,7 @@ SUITE(span_tests)
         {
             int arr[] = {2, 1}; // bigger
 
-            //span<int> s1 = nullptr;
+            //span<int> s1 = NULLPTR;
             span<int> s1;
             span<int> s2 = arr;
 
@@ -1291,7 +1286,7 @@ SUITE(span_tests)
             CHECK(bs.length() == 0);
             CHECK(bs.size_bytes() == 0);
             CHECK(static_cast<const void*>(bs.data()) == static_cast<const void*>(s.data()));
-            //CHECK(bs.data() == nullptr);
+            //CHECK(bs.data() == NULLPTR);
             CHECK(bs.data() == 0);
         }
         {
@@ -1324,7 +1319,7 @@ SUITE(span_tests)
             CHECK(bs.length() == 0);
             CHECK(bs.size_bytes() == 0);
             CHECK(static_cast<void*>(bs.data()) == static_cast<void*>(s.data()));
-            CHECK(bs.data() == nullptr);
+            CHECK(bs.data() == NULLPTR);
         }
 
         {

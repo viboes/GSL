@@ -15,7 +15,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <UnitTest++/UnitTest++.h>
-#if __cplusplus >= 201102L
 
 #include <gsl/multi_span>
 
@@ -524,7 +523,7 @@ SUITE(strided_span_tests)
 	TEST(empty_strided_spans)
 	{
 		{
-			multi_span<int, 0> empty_av(nullptr);
+			multi_span<int, 0> empty_av(NULLPTR);
 			strided_span<int, 1> empty_sav{ empty_av, { 0, 1 } };
 
 			CHECK(empty_sav.bounds().index_bounds() == index<1>{ 0 });
@@ -540,7 +539,7 @@ SUITE(strided_span_tests)
 		}
 
 		{
-			strided_span<int, 1> empty_sav{ nullptr, 0, { 0, 1 } };
+			strided_span<int, 1> empty_sav{ NULLPTR, 0, { 0, 1 } };
 
 			CHECK(empty_sav.bounds().index_bounds() == index<1>{ 0 });
 			CHECK_THROW(empty_sav[0], fail_fast);
@@ -743,7 +742,7 @@ SUITE(strided_span_tests)
 
     }
 }
-#endif
+
 int main(int, const char *[])
 {
 	return UnitTest::RunAllTests();

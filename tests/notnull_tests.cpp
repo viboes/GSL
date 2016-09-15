@@ -18,11 +18,6 @@
 #include <gsl/gsl>
 #include <vector>
 
-//todo: replace nullptr by NULLPTR in the code
-#if __cplusplus <= 199711L
-#define nullptr NULLPTR
-#endif
-
 using namespace gsl;
 
 struct MyBase {};
@@ -49,13 +44,13 @@ SUITE(NotNullTests)
     TEST(TestNotNullConstructors)
     {
 #ifdef CONFIRM_COMPILATION_ERRORS
-        not_null<int*> p = nullptr; // yay...does not compile!
+        not_null<int*> p = NULLPTR; // yay...does not compile!
         not_null<std::vector<char>*> p = 0; // yay...does not compile!
         not_null<int*> p; // yay...does not compile!
         std::unique_ptr<int> up = std::make_unique<int>(120);
         not_null<int*> p = up;
 
-        // Forbid non-nullptr assignable types
+        // Forbid non-NULLPTR assignable types
         not_null<std::vector<int> > f(std::vector<int>{1});
         not_null<int> z(10);
         not_null<std::vector<int> > y({1,2});
@@ -66,7 +61,7 @@ SUITE(NotNullTests)
       CHECK(p.get() == &i);
 
 #if __cplusplus >= 201102L
-      not_null<std::shared_ptr<int> > x(std::make_shared<int>(10)); // shared_ptr<int> is nullptr assignable
+      not_null<std::shared_ptr<int> > x(std::make_shared<int>(10)); // shared_ptr<int> is NULLPTR assignable
 #endif
     }
 
@@ -99,7 +94,7 @@ SUITE(NotNullTests)
         not_null<int*> p = &i;
         CHECK(helper(p));
 
-        int* q = nullptr;
+        int* q = NULLPTR;
         CHECK_THROW(p = q, fail_fast);
     }
 }

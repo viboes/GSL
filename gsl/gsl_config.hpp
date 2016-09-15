@@ -76,6 +76,7 @@
 #endif
 #endif // _MSC_VER
 
+// Move to stdex/cstddef.hpp
 #if __cplusplus <= 199711L
 namespace stdex {
     struct nullptr_t {

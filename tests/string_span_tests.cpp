@@ -15,7 +15,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <UnitTest++/UnitTest++.h>
-#if __cplusplus >= 201102L
 
 #include <cstdlib>
 #include <gsl/string_span>
@@ -477,9 +476,9 @@ SUITE(string_span_tests)
             CHECK(span.length() == 0);
         }
 
-        // from nullptr
+        // from NULLPTR
         {
-            cstring_span<> span(nullptr);
+            cstring_span<> span(NULLPTR);
             CHECK(span.length() == 0);
         }
 
@@ -954,7 +953,7 @@ SUITE(string_span_tests)
         CHECK(foo["bar"] == 1);
     }
 }
-#endif
+
 int main(int, const char *[])
 {
     return UnitTest::RunAllTests();

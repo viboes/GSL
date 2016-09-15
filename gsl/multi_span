@@ -19,8 +19,6 @@
 #ifndef GSL_MULTI_SPAN_H
 #define GSL_MULTI_SPAN_H
 
-#if __cplusplus >= 201102L
-
 #include "gsl_config.hpp"
 
 #include "stdex/type_traits.hpp"
@@ -2247,7 +2245,5 @@ general_span_iterator<Span> operator+(typename general_span_iterator<Span>::diff
 #endif
 
 #endif // GSL_THROW_ON_CONTRACT_VIOLATION
-
-#endif
 
 #endif // GSL_MULTI_SPAN_H

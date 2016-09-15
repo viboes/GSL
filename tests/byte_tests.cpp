@@ -27,11 +27,6 @@
 using namespace std;
 using namespace gsl;
 
-//todo: replace nullptr by NULLPTR in the code
-#if __cplusplus <= 199711L
-#define nullptr NULLPTR
-#endif
-
 namespace
 {
 
