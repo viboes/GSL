@@ -29,6 +29,11 @@
 #include <boost/container/vector.hpp>
 #include <regex>
 
+//todo: replace nullptr by NULLPTR in the code
+#if __cplusplus <= 199711L
+#define nullptr NULLPTR
+#endif
+
 using namespace std;
 using namespace gsl;
 

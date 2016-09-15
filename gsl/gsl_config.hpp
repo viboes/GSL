@@ -60,9 +60,6 @@
 #define GSL_CONTRACT_CONSTEXPR
 #endif
 #else
-#ifndef nullptr
-#define nullptr 0
-#endif
 #define GSL_ALIGNOF(X) boost::alignment_of<X>::value
 
 #define GSL_NO_CXX11_CONSTEXPR
@@ -80,15 +77,18 @@
 #endif // _MSC_VER
 
 #if __cplusplus <= 199711L
-namespace std {
+namespace stdex {
     struct nullptr_t {
         nullptr_t() {}
         template <class T>
         operator T*() const { return 0; }
     };
 }
-const std::nullptr_t NULLPTR;
+const stdex::nullptr_t NULLPTR;
 #else
+namespace stdex {
+  using std::nullptr_t;
+}
 #define NULLPTR nullptr
 #endif
 

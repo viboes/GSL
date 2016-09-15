@@ -189,12 +189,12 @@ namespace details
         typedef typename boost::add_lvalue_reference<value_type>::type reference;
 
         GSL_CONSTEXPR span_iterator() GSL_NOEXCEPT
-            : span_(0), index_(0) {}
+            : span_(NULLPTR), index_(0) {}
 
         GSL_CONTRACT_CONSTEXPR span_iterator(const Span* span, typename Span::index_type index)
             : span_(span), index_(index)
         {
-            Expects(span == nullptr || (index_ >= 0 && index <= span_->length()));
+            Expects(span == NULLPTR || (index_ >= 0 && index <= span_->length()));
         }
 
         friend class span_iterator<Span, true>;
@@ -395,12 +395,9 @@ public:
     GSL_CONSTEXPR static const index_type extent = Extent;
 
     // [span.cons], span constructors, copy, assignment, and destructor
-    GSL_CONSTEXPR span() GSL_NOEXCEPT : storage_(nullptr, details::extent_type<0>()) {}
+    GSL_CONSTEXPR span() GSL_NOEXCEPT : storage_(NULLPTR, details::extent_type<0>()) {}
 
-//fixme
-#if ! defined BOOST_NO_CXX11_NULLPTR   
-    GSL_CONSTEXPR span(std::nullptr_t) GSL_NOEXCEPT : span() {}
-#endif
+    GSL_CONSTEXPR span(stdex::nullptr_t) GSL_NOEXCEPT : span() {}
     GSL_CONSTEXPR span(pointer ptr, index_type count) : storage_(ptr, count) {}
 
     GSL_CONSTEXPR span(pointer firstElem, pointer lastElem)

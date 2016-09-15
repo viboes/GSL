@@ -18,6 +18,11 @@
 #include <gsl/gsl>
 #include <vector>
 
+//todo: replace nullptr by NULLPTR in the code
+#if __cplusplus <= 199711L
+#define nullptr NULLPTR
+#endif
+
 using namespace gsl;
 
 struct MyBase {};

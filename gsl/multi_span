@@ -1225,7 +1225,7 @@ private:
 
 public:
     // default constructor - same as constructing from nullptr_t
-    constexpr multi_span() noexcept : multi_span(nullptr, bounds_type{})
+    constexpr multi_span() noexcept : multi_span(NULLPTR, bounds_type{})
     {
         static_assert(bounds_type::dynamic_rank != 0 ||
                           (bounds_type::dynamic_rank == 0 && bounds_type::static_size == 0),
@@ -1233,8 +1233,8 @@ public:
                       "for dynamic or fixed, zero-length spans.");
     }
 
-    // construct from nullptr - get an empty multi_span
-    constexpr multi_span(std::nullptr_t) noexcept : multi_span(nullptr, bounds_type{})
+    // construct from NULLPTR - get an empty multi_span
+    constexpr multi_span(stdex::nullptr_t) noexcept : multi_span(NULLPTR, bounds_type{})
     {
         static_assert(bounds_type::dynamic_rank != 0 ||
                           (bounds_type::dynamic_rank == 0 && bounds_type::static_size == 0),
@@ -1242,9 +1242,9 @@ public:
                       "for dynamic or fixed, zero-length spans.");
     }
 
-    // construct from nullptr with size of 0 (helps with template function calls)
+    // construct from NULLPTR with size of 0 (helps with template function calls)
     template <class IntType, typename = stdex::enable_if_t<std::is_integral<IntType>::value>>
-    GSL_CONTRACT_CONSTEXPR multi_span(std::nullptr_t, IntType size) noexcept : multi_span(nullptr, bounds_type{})
+    GSL_CONTRACT_CONSTEXPR multi_span(stdex::nullptr_t, IntType size) noexcept : multi_span(NULLPTR, bounds_type{})
     {
         static_assert(bounds_type::dynamic_rank != 0 ||
                           (bounds_type::dynamic_rank == 0 && bounds_type::static_size == 0),
@@ -1274,7 +1274,7 @@ public:
     GSL_CONTRACT_CONSTEXPR multi_span(pointer data, bounds_type bounds) noexcept : data_(data),
                                                                       bounds_(boost::move(bounds))
     {
-        Expects((bounds_.size() > 0 && data != nullptr) || bounds_.size() == 0);
+        Expects((bounds_.size() > 0 && data != NULLPTR) || bounds_.size() == 0);
     }
 
     // construct from begin,end pointer pair
@@ -1285,7 +1285,7 @@ public:
         : multi_span(begin,
                      details::newBoundsHelper<bounds_type>(static_cast<pointer>(end) - begin))
     {
-        Expects(begin != nullptr && end != nullptr && begin <= static_cast<pointer>(end));
+        Expects(begin != NULLPTR && end != NULLPTR && begin <= static_cast<pointer>(end));
     }
 
     // construct from n-dimensions static array
@@ -1804,7 +1804,7 @@ public:
     GSL_CONTRACT_CONSTEXPR strided_span(pointer ptr, size_type size, bounds_type bounds)
         : data_(ptr), bounds_(boost::move(bounds))
     {
-        Expects((bounds_.size() > 0 && ptr != nullptr) || bounds_.size() == 0);
+        Expects((bounds_.size() > 0 && ptr != NULLPTR) || bounds_.size() == 0);
         // Bounds cross data boundaries
         Expects(this->bounds().total_size() <= size);
         (void) size;
@@ -1890,7 +1890,7 @@ public:
 
     constexpr pointer data() const noexcept { return data_; }
 
-    constexpr explicit operator bool() const noexcept { return data_ != nullptr; }
+    constexpr explicit operator bool() const noexcept { return data_ != NULLPTR; }
 
     constexpr iterator begin() const { return iterator{this, true}; }
 

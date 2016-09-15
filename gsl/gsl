@@ -102,7 +102,10 @@ template <class T>
 class not_null
 {
 #if ! defined BOOST_NO_CXX11_NULLPTR
-    BOOST_STATIC_ASSERT_MSG(boost::is_assignable<T&, std::nullptr_t>::value, "T cannot be assigned nullptr.");
+// fixme: Why it is not assignable?
+    BOOST_STATIC_ASSERT_MSG((boost::is_assignable<T&, stdex::nullptr_t>::value), "T cannot be assigned nullptr.");
+#else
+    BOOST_STATIC_ASSERT_MSG((boost::is_convertible<stdex::nullptr_t, T>::value), "nullptr_t cannot be converted to T.");
 #endif
 public:
     not_null(T t) : ptr_(t) { ensure_invariant(); }
@@ -137,22 +140,16 @@ public:
 #endif
 
     // prevents compilation when someone attempts to assign a nullptr
-// fixme
-#if ! defined BOOST_NO_CXX11_NULLPTR   
-    BOOST_DELETED_FUNCTION(not_null(std::nullptr_t));
-#endif    
+    BOOST_DELETED_FUNCTION(not_null(stdex::nullptr_t));
     BOOST_DELETED_FUNCTION(not_null(int));
-// fixme
-#if ! defined BOOST_NO_CXX11_NULLPTR   
-    BOOST_DELETED_FUNCTION(not_null<T>& operator=(std::nullptr_t));
-#endif    
+    BOOST_DELETED_FUNCTION(not_null<T>& operator=(stdex::nullptr_t));
     BOOST_DELETED_FUNCTION(not_null<T>& operator=(int));
 
 public:
     T get() const
     {
 #ifdef _MSC_VER
-        __assume(ptr_ != nullptr);
+        __assume(ptr_ != NULLPTR);
 #endif
         return ptr_;
     } // the assume() should help the optimizer
@@ -168,7 +165,7 @@ private:
     // we assume that the compiler can hoist/prove away most of the checks inlined from this
     // function
     // if not, we could make them optional via conditional compilation
-    void ensure_invariant() const { Expects(ptr_ != nullptr); }
+    void ensure_invariant() const { Expects(ptr_ != NULLPTR); }
 
     // unwanted operators...pointers only point to single objects!
     // TODO ensure all arithmetic ops on this type are unavailable
