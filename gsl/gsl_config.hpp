@@ -79,4 +79,17 @@
 #endif
 #endif // _MSC_VER
 
+#if __cplusplus <= 199711L
+namespace std {
+    struct nullptr_t {
+        nullptr_t() {}
+        template <class T>
+        operator T*() const { return 0; }
+    };
+}
+const std::nullptr_t NULLPTR;
+#else
+#define NULLPTR nullptr
+#endif
+
 #endif // GSL_CONFIG_H
