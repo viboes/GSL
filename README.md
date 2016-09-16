@@ -1,20 +1,40 @@
 GSL: Guideline Support Library [![Build Status](https://travis-ci.org/Microsoft/GSL.svg?branch=master)](https://travis-ci.org/Microsoft/GSL) [![Build status](https://ci.appveyor.com/api/projects/status/github/Microsoft/GSL?svg=true)](https://ci.appveyor.com/project/neilmacintosh/GSL)
 =================================
 
-# viboes fork
+# viboes/GSL fork - c++98 branch
 
-This is a fork of the GSL LIbrary, to make it compile for C++11 compilers.
+This is a branch of the C++11 fork of the GSL LIbrary (see master branche in this repository), to make it compile for C++98 compilers.
 
 Note that the CMakeList.txt needs to be adapted yet so that you will need to hack them  :(
 
-The fork add a gsl_config.hpp file to manage with C++14 constexpr and the definition in stdex of some C++14 library missing in C++11.
+The fork adds a gsl_config.hpp file to manage with C++14 constexpr/noexcept/alignof.nullptr and the definition in stdex of some C++14 library missing in C++11/C++98.
 
-The GSL sources have been modified taking in account the consytexpr macro and the stdex features.
+The GSL sources have been modified taking in account the constexpr macro and the stdex features.
 
-THe C++11 tests have been run on:
+THe C++98/C++11/C++14/C++1z tests have been run on:
 
-* OS X El Capitan using CLANG-3.7.0
-* OS X El Capitan using GCC-5.2.0  
+* OS X El Capitan using
+ 
+  * CLANG-3.7.0, CLANG-3.9.0
+  * GCC-5.2.0, GCC-6.1.0  
+
+Some useful links
+
+* Brief documentation of "GSL: Guideline support library" http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-gsl.
+
+* You can find talks and slides related to GSL and the C++ Core Guielines can be found at https://github.com/isocpp/CppCoreGuidelines/tree/master/talks in particular:
+
+  * “Evolving array_view and string_view for safe C++ code"
+   
+    * Talk: https://www.youtube.com/watch?v=C4Z3c4Sv52U
+    * Slides: https://github.com/isocpp/CppCoreGuidelines/blob/master/talks/MacIntosh%20-%20A%20Few%20Good%20Types.pdf. 
+
+  Even if these presentation doesn't use completly the span interface it is worth wtching it.  
+
+  * "Writing Good C++14... By Default"
+  
+    * Video https://www.youtube.com/watch?v=hEx5DNLWGgA&list=PLHTh1InhhwT75gykhs7pqcR_uSiG601oh&index=2
+    * Slides https://github.com/isocpp/CppCoreGuidelines/blob/master/talks/Sutter%20-%20CppCon%202015%20day%202%20plenary%20.pdf
 
 # Microsoft/GSL
 

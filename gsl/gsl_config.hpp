@@ -22,6 +22,7 @@
 
 #include <boost/config.hpp>
 #include <boost/type_traits/alignment_of.hpp>
+#include "stdex/nullptr.hpp"
 
 
 
@@ -75,22 +76,5 @@
 
 #endif
 #endif // _MSC_VER
-
-// Move to stdex/cstddef.hpp
-#if __cplusplus <= 199711L
-namespace stdex {
-    struct nullptr_t {
-        nullptr_t() {}
-        template <class T>
-        operator T*() const { return 0; }
-    };
-}
-const stdex::nullptr_t NULLPTR;
-#else
-namespace stdex {
-  using std::nullptr_t;
-}
-#define NULLPTR nullptr
-#endif
 
 #endif // GSL_CONFIG_H
