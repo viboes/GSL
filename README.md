@@ -1,4 +1,4 @@
-GSL: Guideline Support Library [![Build Status](https://travis-ci.org/Microsoft/GSL.svg?branch=master)](https://travis-ci.org/Microsoft/GSL) [![Build status](https://ci.appveyor.com/api/projects/status/github/Microsoft/GSL?svg=true)](https://ci.appveyor.com/project/neilmacintosh/GSL)
+GSL: Guideline Support Library 
 =================================
 
 # viboes/GSL fork - c++98 branch
@@ -20,21 +20,21 @@ THe C++98/C++11/C++14/C++1z tests have been run on:
 
 Some useful links
 
-* Brief documentation of "GSL: Guideline support library" http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-gsl.
+* Brief documentation of [GSL: Guideline support library](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-gsl).
 
-* You can find talks and slides related to GSL and the C++ Core Guielines can be found at https://github.com/isocpp/CppCoreGuidelines/tree/master/talks in particular:
+* [Talks and slides](https://github.com/isocpp/CppCoreGuidelines/tree/master/talks) related to GSL and the C++ Core Guielines in particular:
 
   * “Evolving array_view and string_view for safe C++ code"
    
-    * Talk: https://www.youtube.com/watch?v=C4Z3c4Sv52U
-    * Slides: https://github.com/isocpp/CppCoreGuidelines/blob/master/talks/MacIntosh%20-%20A%20Few%20Good%20Types.pdf. 
+    * [Talk](https://www.youtube.com/watch?v=C4Z3c4Sv52U)
+    * [Slides](https://github.com/isocpp/CppCoreGuidelines/blob/master/talks/MacIntosh%20-%20A%20Few%20Good%20Types.pdf) 
 
   Even if these presentation doesn't use completly the span interface it is worth wtching it.  
 
   * "Writing Good C++14... By Default"
   
-    * Video https://www.youtube.com/watch?v=hEx5DNLWGgA&list=PLHTh1InhhwT75gykhs7pqcR_uSiG601oh&index=2
-    * Slides https://github.com/isocpp/CppCoreGuidelines/blob/master/talks/Sutter%20-%20CppCon%202015%20day%202%20plenary%20.pdf
+    * [Talk](https://www.youtube.com/watch?v=hEx5DNLWGgA&list=PLHTh1InhhwT75gykhs7pqcR_uSiG601oh&index=2)
+    * [Slides](https://github.com/isocpp/CppCoreGuidelines/blob/master/talks/Sutter%20-%20CppCon%202015%20day%202%20plenary%20.pdf)
 
 # Microsoft/GSL
 
