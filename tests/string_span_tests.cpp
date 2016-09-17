@@ -334,7 +334,7 @@ SUITE(string_span_tests)
         {
             std::vector<char> str1 = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             cstring_span<>::type span1 = str1;
-            std::vector<char> str2 = std::move(str1);
+            std::vector<char> str2 = boost::move(str1);
             cstring_span<>::type span2 = str2;
 
             // comparison of spans from the same vector before and after move (ok)
@@ -755,44 +755,48 @@ SUITE(string_span_tests)
         // move string_span
         {
             cstring_span<>::type span = "Hello";
-            cstring_span<>::type span1 = std::move(span);
+            cstring_span<>::type span1 = boost::move(span);
+            CHECK(span1.length() == 5);
+        }
+#if __cplusplus >= 201102L
+        {
+            cstring_span<>::type span = "Hello";
+            cstring_span<>::type span1 = move_wrapper(boost::move(span));
             CHECK(span1.length() == 5);
         }
         {
             cstring_span<>::type span = "Hello";
-            cstring_span<>::type span1 = move_wrapper(std::move(span));
+            cstring_span<>::type span1 = move_wrapper(boost::move(span));
             CHECK(span1.length() == 5);
         }
-        {
-            cstring_span<>::type span = "Hello";
-            cstring_span<>::type span1 = move_wrapper(std::move(span));
-            CHECK(span1.length() == 5);
-        }
+#endif
 
         // move span
         {
             span<const char> span = ensure_z("Hello");
-            cstring_span<>::type span1 = std::move(span);
+            cstring_span<>::type span1 = boost::move(span);
             CHECK(span1.length() == 5);
         }
+#if __cplusplus >= 201102L
         {
             span<const char> span = ensure_z("Hello");
-            cstring_span<>::type span2 = move_wrapper(std::move(span));
+            cstring_span<>::type span2 = move_wrapper(boost::move(span));
             CHECK(span2.length() == 5);
         }
+#endif
 
         // move string
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
             std::string str = "Hello";
-            string_span<>::type span = std::move(str);
+            string_span<>::type span = boost::move(str);
             CHECK(span.length() == 5);
 #endif
         }
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
             std::string str = "Hello";
-            string_span<>::type span = move_wrapper<std::string>(std::move(str));
+            string_span<>::type span = move_wrapper<std::string>(boost::move(str));
             CHECK(span.length() == 5);
 #endif
         }
@@ -806,14 +810,14 @@ SUITE(string_span_tests)
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
             std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
-            string_span<>::type span = std::move(vec);
+            string_span<>::type span = boost::move(vec);
             CHECK(span.length() == 5);
 #endif
         }
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
             std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
-            string_span<>::type span = move_wrapper<std::vector<char>>(std::move(vec));
+            string_span<>::type span = move_wrapper<std::vector<char>>(boost::move(vec));
             CHECK(span.length() == 5);
 #endif
         }

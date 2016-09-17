@@ -31,7 +31,7 @@
 #include <boost/move/move.hpp>
 #include <boost/type_traits.hpp>
 
-#include <cstdint>
+//#include <cstdint>
 #include <cstring>
 #include <string>
 
@@ -189,7 +189,7 @@ span<T, dynamic_extent> ensure_z(T (&sz)[N])
 }
 
 template <class Cont>
-span<typename std::remove_pointer<typename Cont::pointer>::type, dynamic_extent>
+span<typename boost::remove_pointer<typename Cont::pointer>::type, dynamic_extent>
 ensure_z(Cont& cont)
 {
     return ensure_z(cont.data(), static_cast<std::ptrdiff_t>(cont.length()));
@@ -317,6 +317,7 @@ public:
     {
     }
 
+#if __cplusplus >= 201102L
     template <size_t N, class ArrayElementType>
     GSL_CONSTEXPR basic_string_span(std::array<ArrayElementType, N>& arr) GSL_NOEXCEPT : span_(arr)
     {
@@ -335,6 +336,7 @@ public:
     {
     }
 
+#endif
     GSL_CONSTEXPR basic_string_span(impl_type s) GSL_NOEXCEPT : span_(s)
     {
     }
@@ -357,10 +359,10 @@ public:
     GSL_CONSTEXPR basic_string_span(Container& cont,
               typename boost::enable_if_c<
                   !details::is_basic_string_span<Container>::value &&
-                  std::is_convertible<typename Container::pointer, pointer>::value
+                  boost::is_convertible<typename Container::pointer, pointer>::value
 #if ! defined BOOST_NO_CXX11_DECLTYPE                  
                   &&
-                  std::is_convertible<typename Container::pointer,
+                  boost::is_convertible<typename Container::pointer,
                                       decltype(boost::declval<Container>().data())>::value
 #endif
               >::type* = 0
@@ -372,10 +374,10 @@ public:
     GSL_CONSTEXPR basic_string_span(const Container& cont,
       typename boost::enable_if_c<
                   !details::is_basic_string_span<Container>::value &&
-                  std::is_convertible<typename Container::pointer, pointer>::value 
+                  boost::is_convertible<typename Container::pointer, pointer>::value 
 #if ! defined BOOST_NO_CXX11_DECLTYPE                  
                   &&
-                  std::is_convertible<typename Container::pointer,
+                  boost::is_convertible<typename Container::pointer,
                                       decltype(boost::declval<Container>().data())>::value
 #endif        
       >::type * = 0
@@ -388,7 +390,7 @@ public:
         class OtherValueType, std::ptrdiff_t OtherExtent>
     GSL_CONSTEXPR basic_string_span(basic_string_span<OtherValueType, OtherExtent> other,
       typename boost::enable_if_c<
-        std::is_convertible<
+        boost::is_convertible<
             typename basic_string_span<OtherValueType, OtherExtent>::impl_type, impl_type
         >::value
       >::type * = 0     
@@ -504,10 +506,10 @@ struct cwstring_span { typedef  basic_string_span<const wchar_t, Extent> type;};
 #ifndef GSL_MSVC_HAS_TYPE_DEDUCTION_BUG
 
 template <typename CharT, std::ptrdiff_t Extent>
-std::basic_string<typename std::remove_const<CharT>::type>
+std::basic_string<typename boost::remove_const<CharT>::type>
 to_string(basic_string_span<CharT, Extent> view)
 {
-    return std::basic_string<typename std::remove_const<CharT>::type>(view.data(), static_cast<size_t>(view.length()));
+    return std::basic_string<typename boost::remove_const<CharT>::type>(view.data(), static_cast<size_t>(view.length()));
 }
 
 #else
@@ -632,7 +634,7 @@ struct cwzstring_span  { typedef  basic_zstring_span<const wchar_t, Max> type; }
 template <class CharT, std::ptrdiff_t Extent, class T>
 typename boost::enable_if_c<
               details::is_basic_string_span<T>::value ||
-              std::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type > >::value, 
+              boost::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type > >::value, 
 bool>::type operator==(const gsl::basic_string_span<CharT, Extent>& one, const T& other) GSL_NOEXCEPT
 {
     gsl::basic_string_span<typename boost::add_const<CharT>::type > tmp(other);
@@ -646,7 +648,7 @@ bool>::type operator==(const gsl::basic_string_span<CharT, Extent>& one, const T
 template <class CharT, std::ptrdiff_t Extent, class T>
 typename boost::enable_if_c<
               !details::is_basic_string_span<T>::value &&
-              std::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type > >::value,
+              boost::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type > >::value,
 bool>::type operator==(const T& one, const gsl::basic_string_span<CharT, Extent>& other) GSL_NOEXCEPT
 {
     gsl::basic_string_span<typename boost::add_const<CharT>::type > tmp(one);
@@ -659,7 +661,7 @@ bool>::type operator==(const T& one, const gsl::basic_string_span<CharT, Extent>
 
 // operator !=
 template <typename CharT, std::ptrdiff_t Extent, typename T>
-typename boost::enable_if_c<std::is_convertible<
+typename boost::enable_if_c<boost::is_convertible<
               T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value,
 bool>::type operator!=(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT
 {
@@ -669,7 +671,7 @@ bool>::type operator!=(gsl::basic_string_span<CharT, Extent> one, const T& other
 template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
-        std::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value &&
+        boost::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value &&
         !gsl::details::is_basic_string_span<T>::value, 
 bool>::type operator!=(const T& one, gsl::basic_string_span<CharT, Extent> other) GSL_NOEXCEPT
 {
@@ -678,7 +680,7 @@ bool>::type operator!=(const T& one, gsl::basic_string_span<CharT, Extent> other
 
 // operator<
 template <typename CharT, std::ptrdiff_t Extent, typename T>
-typename boost::enable_if_c<std::is_convertible<
+typename boost::enable_if_c<boost::is_convertible<
               T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value,
 bool>::type operator<(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT
 {
@@ -689,7 +691,7 @@ bool>::type operator<(gsl::basic_string_span<CharT, Extent> one, const T& other)
 template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
-        std::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value &&
+        boost::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value &&
         !gsl::details::is_basic_string_span<T>::value,    
 bool>::type operator<(const T& one, gsl::basic_string_span<CharT, Extent> other) GSL_NOEXCEPT
 {
@@ -703,39 +705,50 @@ bool>::type operator<(const T& one, gsl::basic_string_span<CharT, Extent> other)
 // so the cases below are already covered by the previous operators
 
 //fixme
-#if ! defined BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
+//#if ! defined BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
 
 template <
-    typename CharT, std::ptrdiff_t Extent = gsl::dynamic_extent, typename T,
-    typename Dummy = typename boost::enable_if_c<
+    typename CharT, std::ptrdiff_t Extent, typename T>
+
+typename boost::enable_if_c<
         !gsl::details::is_span<T>::value && !gsl::details::is_basic_string_span<T>::value &&
-        std::is_convertible<typename T::value_type*, CharT*>::value &&
-        std::is_same<typename boost::decay<decltype(boost::declval<T>().size(), *boost::declval<T>().data())>::type,
-                     typename T::value_type>::value> >
-bool operator<(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT
+        boost::is_convertible<typename T::value_type*, CharT*>::value 
+// fixme
+#if ! defined BOOST_NO_CXX11_DECLTYPE
+        &&
+        boost::is_same<typename boost::decay<decltype(boost::declval<T>().size(), *boost::declval<T>().data())>::type,
+                     typename T::value_type>::value>
+#endif
+,
+bool >::type operator<(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT
 {
     gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> tmp(other);
     return std::lexicographical_compare(one.begin(), one.end(), tmp.begin(), tmp.end());
 }
 
 template <
-    typename CharT, std::ptrdiff_t Extent = gsl::dynamic_extent, typename T,
-    typename Dummy = boost::enable_if_c<
+    typename CharT, std::ptrdiff_t Extent, typename T>
+typename boost::enable_if_c<
         !gsl::details::is_span<T>::value && !gsl::details::is_basic_string_span<T>::value &&
-        std::is_convertible<typename T::value_type*, CharT*>::value &&
-        std::is_same<typename boost::decay<decltype(boost::declval<T>().size(), *boost::declval<T>().data())>::type,
-                     typename T::value_type>::value>::type >
-bool operator<(const T& one, gsl::basic_string_span<CharT, Extent> other) GSL_NOEXCEPT
+        boost::is_convertible<typename T::value_type*, CharT*>::value 
+// fixme
+#if ! defined BOOST_NO_CXX11_DECLTYPE
+        &&
+        boost::is_same<typename boost::decay<decltype(boost::declval<T>().size(), *boost::declval<T>().data())>::type,
+                     typename T::value_type>::value
+#endif                     
+,
+bool>::type operator<(const T& one, gsl::basic_string_span<CharT, Extent> other) GSL_NOEXCEPT
 {
     gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> tmp(one);
     return std::lexicographical_compare(tmp.begin(), tmp.end(), other.begin(), other.end());
 }
-#endif
+//#endif
 #endif
 
 // operator <=
 template <typename CharT, std::ptrdiff_t Extent, typename T>
-typename boost::enable_if_c<std::is_convertible<
+typename boost::enable_if_c<boost::is_convertible<
               T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value,
 bool>::type operator<=(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT
 {
@@ -745,7 +758,7 @@ bool>::type operator<=(gsl::basic_string_span<CharT, Extent> one, const T& other
 template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
-        std::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value &&
+        boost::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value &&
         !gsl::details::is_basic_string_span<T>::value,
 bool>::type operator<=(const T& one, gsl::basic_string_span<CharT, Extent> other) GSL_NOEXCEPT
 {
@@ -761,9 +774,14 @@ template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
         !gsl::details::is_span<T>::value && !gsl::details::is_basic_string_span<T>::value &&
-        std::is_convertible<typename T::value_type*, CharT*>::value &&
-        std::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
-                     typename T::value_type>::value,
+        boost::is_convertible<typename T::value_type*, CharT*>::value 
+// fixme
+#if ! defined BOOST_NO_CXX11_DECLTYPE
+        &&
+        boost::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
+                     typename T::value_type>::value
+#endif
+,
 bool>::type operator<=(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT
 {
     return !(other < one);
@@ -773,9 +791,15 @@ template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
         !gsl::details::is_span<T>::value && !gsl::details::is_basic_string_span<T>::value &&
-        std::is_convertible<typename T::value_type*, CharT*>::value &&
-        std::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
-                     typename T::value_type>::value,
+        boost::is_convertible<typename T::value_type*, CharT*>::value 
+// fixme
+#if ! defined BOOST_NO_CXX11_DECLTYPE
+        &&
+        boost::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
+                     typename T::value_type>::value
+
+#endif
+,
 bool>::type operator<=(const T& one, gsl::basic_string_span<CharT, Extent> other) GSL_NOEXCEPT
 {
     return !(other < one);
@@ -784,7 +808,7 @@ bool>::type operator<=(const T& one, gsl::basic_string_span<CharT, Extent> other
 
 // operator>
 template <typename CharT, std::ptrdiff_t Extent, typename T>
-typename boost::enable_if_c<std::is_convertible<
+typename boost::enable_if_c<boost::is_convertible<
               T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value,
 bool>::type operator>(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT
 {
@@ -794,7 +818,7 @@ bool>::type operator>(gsl::basic_string_span<CharT, Extent> one, const T& other)
 template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
-        std::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>, Extent> >::value &&
+        boost::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>, Extent> >::value &&
         !gsl::details::is_basic_string_span<T>::value,
 bool>::type operator>(const T& one, gsl::basic_string_span<CharT, Extent> other) GSL_NOEXCEPT
 {
@@ -810,9 +834,14 @@ template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
         !gsl::details::is_span<T>::value && !gsl::details::is_basic_string_span<T>::value &&
-        std::is_convertible<typename T::value_type*, CharT*>::value &&
-        std::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
-                     typename T::value_type>::value,
+        boost::is_convertible<typename T::value_type*, CharT*>::value 
+// fixme
+#if ! defined BOOST_NO_CXX11_DECLTYPE
+        &&
+        boost::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
+                     typename T::value_type>::value
+#endif
+,
 bool>::type operator>(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT
 {
     return other < one;
@@ -822,9 +851,14 @@ template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
         !gsl::details::is_span<T>::value && !gsl::details::is_basic_string_span<T>::value &&
-        std::is_convertible<typename T::value_type*, CharT*>::value &&
-        std::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
-                     typename T::value_type>::value,
+        boost::is_convertible<typename T::value_type*, CharT*>::value 
+// fixme
+#if ! defined BOOST_NO_CXX11_DECLTYPE
+        &&
+        boost::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
+                     typename T::value_type>::value
+#endif                     
+,
 bool>::type operator>(const T& one, gsl::basic_string_span<CharT, Extent> other) GSL_NOEXCEPT
 {
     return other < one;
@@ -833,7 +867,7 @@ bool>::type operator>(const T& one, gsl::basic_string_span<CharT, Extent> other)
 
 // operator >=
 template <typename CharT, std::ptrdiff_t Extent, typename T>
-typename boost::enable_if_c<std::is_convertible<
+typename boost::enable_if_c<boost::is_convertible<
               T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value,
 bool>::type operator>=(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT
 {
@@ -843,7 +877,7 @@ bool>::type operator>=(gsl::basic_string_span<CharT, Extent> one, const T& other
 template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
-        std::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value &&
+        boost::is_convertible<T, gsl::basic_string_span<typename boost::add_const<CharT>::type, Extent> >::value &&
         !gsl::details::is_basic_string_span<T>::value,
 bool>::type operator>=(const T& one, gsl::basic_string_span<CharT, Extent> other) GSL_NOEXCEPT
 {
@@ -859,9 +893,14 @@ template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
         !gsl::details::is_span<T>::value && !gsl::details::is_basic_string_span<T>::value &&
-        std::is_convertible<typename T::value_type*, CharT*>::value &&
-        std::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
-                     typename T::value_type>::value,
+        boost::is_convertible<typename T::value_type*, CharT*>::value 
+// fixme
+#if ! defined BOOST_NO_CXX11_DECLTYPE
+        &&
+        boost::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
+                     typename T::value_type>::value
+#endif                     
+,
 bool>::type operator>=(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT
 {
     return !(one < other);
@@ -871,9 +910,14 @@ template <
     typename CharT, std::ptrdiff_t Extent, typename T>
 typename boost::enable_if_c<
         !gsl::details::is_span<T>::value && !gsl::details::is_basic_string_span<T>::value &&
-        std::is_convertible<typename T::value_type*, CharT*>::value &&
-        std::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
-                     typename T::value_type>::value,
+        boost::is_convertible<typename T::value_type*, CharT*>::value 
+// fixme
+#if ! defined BOOST_NO_CXX11_DECLTYPE        
+        &&
+        boost::is_same<typename boost::decay<decltype((boost::declval<T>().size(), *boost::declval<T>().data()))>::type,
+                     typename T::value_type>::value
+#endif
+,
 bool>::type operator>=(const T& one, gsl::basic_string_span<CharT, Extent> other) GSL_NOEXCEPT
 {
     return !(one < other);

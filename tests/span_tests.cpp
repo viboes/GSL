@@ -27,8 +27,9 @@
 #include <string>
 #include <vector>
 #include <boost/container/vector.hpp>
+#if __cplusplus >= 201102L
 #include <regex>
-
+#endif
 using namespace std;
 using namespace gsl;
 
@@ -952,11 +953,19 @@ SUITE(span_tests)
             span<int> s = a;
 
             span<int>::iterator it = s.begin();
+#if __cplusplus >= 201102L
             span<int>::iterator it2 = std::begin(s);
+#else
+            span<int>::iterator it2 = s.begin();
+#endif
             CHECK(it == it2);
 
             it = s.end();
+#if __cplusplus >= 201102L
             it2 = std::end(s);
+#else
+            it2 = s.end();
+#endif
             CHECK(it == it2);
         }
 
@@ -1401,6 +1410,7 @@ SUITE(span_tests)
         CHECK_THROW(f3(av), fail_fast);
     }
 
+#if __cplusplus >= 201102L
     TEST(interop_with_std_regex)
     {
         char lat[] = { '1', '2', '3', '4', '5', '6', 'E', 'F', 'G' };
@@ -1423,5 +1433,6 @@ SUITE(span_tests)
         CHECK(match[0].first == f_it);
         CHECK(match[0].second == (f_it + 1));
     }
+#endif
 }
 int main(int, const char* []) { return UnitTest::RunAllTests(); }

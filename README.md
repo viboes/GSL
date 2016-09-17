@@ -21,12 +21,12 @@ Feature / library           | GSL     | M-GSL   | GSL-Lite| V98-GSL   | Notes |
 ----------------------------|:-------:|:-------:|:-------:|:--------:|:-------|
 **1.Lifetime&nbsp;safety**  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
 **1.1 Indirection**         | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
-not_null<>                  | &#10003;| &#10003;| &#10003;| &#10003;| Wrap any indirection and enforce non-null |
+not_null<>                  | &#10003;| &#10003;| &#10003;| &#10003;| Wrap any indirection and enforce non-null PARTIALY as nullptr_t is not convertible to pointers.|
 maybe_null<>                | -       | &#10003;| -       | -       | &nbsp; |
 **1.2 Ownership**           | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
 owner<>                     | &#10003;| &#10003;| >=C++11 | &#10060; C++98 >=C++11 &#10003;| Owned raw pointers |
+owner<T>::type              | -       | -       | -       | C++98 &#10003; >=C++11 &#10060;| C++98 style |
 Owner()                     | -       | -       | &#10003;| -       | Macro for pre-C++11; |
-owner<T>::type              | -       | -       | -       | &#10003;| C++98 style |
 unique_ptr<>                | &#10003;| &#10003;| >=C++11 | >=C++11 | std::unique_ptr<> |
 unique_ptr<>                | -       | -       | < C++11 | -       |VC10, VC11 |
 shared_ptr<>                | &#10003;| &#10003;| >=C++11 | >=C++11 | std::shared_ptr<> |
@@ -35,22 +35,26 @@ stack_array<>               | &#10003;| -       | -       | -       | A stack-al
 dyn_array<>                 | ?       | -       | -       | -       | A heap-allocated array, fixed size |
 **2.Bounds&nbsp;safety**    | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
 **2.1 Tag Types**           | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
-zstring                     | &#10003;| &#10003;| &#10003;| &#10003;| a char* (C-style string) |
-wzstring                    | -       | &#10003;| &#10003;| &#10003;| a wchar_t* (C-style string) |
-czstring                    | &#10003;| &#10003;| &#10003;| &#10003;| a const char* (C-style string) |
-cwzstring                   | -       | &#10003;| &#10003;| &#10003;| a const wchar_t* (C-style string) |
+zstring                     | &#10003;| &#10003;| &#10003;| C++98 &#10060; >=C++11 &#10003;| a char* (C-style string) |
+wzstring                    | -       | &#10003;| &#10003;| C++98 &#10060; >=C++11 &#10003;| a wchar_t* (C-style string) |
+czstring                    | &#10003;| &#10003;| &#10003;| C++98 &#10060; >=C++11 &#10003;| a const char* (C-style string) |
+cwzstring                   | -       | &#10003;| &#10003;| C++98 &#10060; >=C++11 &#10003;| a const wchar_t* (C-style string) |
+zstring<T>::type            | &#10003;| &#10003;| &#10003;| C++98 &#10003; >=C++11 &#10060;| a char* (C-style string) C++98 style |
+wzstring<T>::type           | -       | &#10003;| &#10003;| C++98 &#10003; >=C++11 &#10060;| a wchar_t* (C-style string)C++98 style |
+czstring<T>::type           | &#10003;| &#10003;| &#10003;| C++98 &#10003; >=C++11 &#10060;| a const char* (C-style string) C++98 style|
+cwzstring<T>::type          | -       | &#10003;| &#10003;C++98 &#10060; >=C++11 &#10003;| a const wchar_t* (C-style string) C++98 style|
 **2.2 Views**               | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; | &nbsp; |
 span<>                      | &#10003;| &#10003;| 1D views| &#10003;| A view of contiguous T's, replace (*,len) |
 span_p<>                    | &#10003;| -       | -       | -       | A view of contiguous T's that ends at the first element for which predicate(*p) is true |
 as_span()                   | -       | &#10003;| &#10003;| &#10003;| Create a span |
 string_span                 | &#10003;| &#10003;| &#10003;| &#10003;| span&lt;char> |
-wstring_span                | -       | &#10003;| &#10003;| &#10060; C++98 >=C++11 &#10003;| span&lt;wchar_t > |
-cstring_span                | &#10003;| &#10003;| &#10003;| &#10060; C++98 >=C++11 &#10003;| span&lt;const char> |
-cwstring_span               | -       | &#10003;| &#10003;| &#10060; C++98 >=C++11 &#10003;| span&lt;const wchar_t > |
-ensure_z()                  | -       | &#10003;| &#10003;| &#10060; C++98 >=C++11 &#10003;| Create a cstring_span or cwstring_span |
-to_string()                 | -       | &#10003;| &#10003;| &#10060; C++98 >=C++11 &#10003;| Convert a string_span to std::string or std::wstring |
+wstring_span                | -       | &#10003;| &#10003;| &#10003;| span&lt;wchar_t > |
+cstring_span                | &#10003;| &#10003;| &#10003;| &#10003;| span&lt;const char> |
+cwstring_span               | -       | &#10003;| &#10003;| &#10003;| span&lt;const wchar_t > |
+ensure_z()                  | -       | &#10003;| &#10003;| C++98 &#10060; >=C++11 &#10003;| Create a cstring_span or cwstring_span |
+to_string()                 | -       | &#10003;| &#10003;| &#10003;| Convert a string_span to std::string or std::wstring |
 **2.3 Indexing**            | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
-at()                        | &#10003;| &#10003;| >=C++11 | &#10060; C++98 >=C++11 &#10003;| Bounds-checked way of accessing<br>static arrays, std::array, std::vector |
+at()                        | &#10003;| &#10003;| >=C++11 | &#10003;| Bounds-checked way of accessing<br>static arrays, std::array, std::vector |
 at()                        | -       | -       | < C++11 | -       | static arrays, std::vector<br>std::array : VC11 |
 **3. Assertions**           | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; | &nbsp; |
 Expects()                   | &#10003;| &#10003;| &#10003;| &#10003;| Precondition assertion |
@@ -66,7 +70,6 @@ implicit                    | &#10003;| -       | &#10003;| -       | Symmetric 
 move_owner                  | ?       | -       | -       | -       | ... |
 **5. Concepts**             | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; | &nbsp; |
 ...                         | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; | &nbsp; |
-
 
 ## Reported to work with
 
@@ -86,6 +89,9 @@ OS X      | Clang/LLVM | 3.7.0    |&#10003;| -std=c++98 -std=c++11 -std=c++14 -s
 
 Please let me know if you have tried other platform/compilers.And of course, don't forget to report errors and suggestion improvements.
 
+## Dependencies
+
+* Boost
 
 ## Other GSL implementations
 
