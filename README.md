@@ -1,9 +1,9 @@
 GSL: Guideline Support Library 
 =================================
 
-# viboes/GSL fork - c++98 branch
+# viboes/GSL - Microsoft/GSL fork supporting C++98/C++11/C++14/C++1z compilers in cxx branch
 
-This is a branch of the C++11 fork of the GSL LIbrary (see master branche in this repository), to make it compile for C++98 compilers.
+This is a branch of the viboes/GSL fork of the Microsoft/GSL library (see master branche in this repository), to make it compile for C++98 compilers.
 
 Note that the CMakeList.txt needs to be adapted yet so that you will need to hack them  :(
 
@@ -11,30 +11,105 @@ The fork adds a gsl_config.hpp file to manage with C++14 constexpr/noexcept/alig
 
 The GSL sources have been modified taking in account the constexpr macro and the stdex features.
 
-THe C++98/C++11/C++14/C++1z tests have been run on:
+## Features
 
-* OS X El Capitan using
+See also section [GSL: Guideline support library](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#S-gsl) of the C++ Core Guidelines [2]. 
+
+V98-GSL means cxx98 branch of this fork viboes/GSL.
  
-  * CLANG-3.7.0, CLANG-3.9.0
-  * GCC-5.2.0, GCC-6.1.0  
+Feature / library           | GSL     | M-GSL   | GSL-Lite| V98-GSL   | Notes |
+----------------------------|:-------:|:-------:|:-------:|:--------:|:-------|
+**1.Lifetime&nbsp;safety**  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
+**1.1 Indirection**         | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
+not_null<>                  | &#10003;| &#10003;| &#10003;| &#10003;| Wrap any indirection and enforce non-null |
+maybe_null<>                | -       | &#10003;| -       | -       | &nbsp; |
+**1.2 Ownership**           | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
+owner<>                     | &#10003;| &#10003;| >=C++11 | &#10060; C++98 >=C++11 &#10003;| Owned raw pointers |
+Owner()                     | -       | -       | &#10003;| -       | Macro for pre-C++11; |
+owner<T>::type              | -       | -       | -       | &#10003;| C++98 style |
+unique_ptr<>                | &#10003;| &#10003;| >=C++11 | >=C++11 | std::unique_ptr<> |
+unique_ptr<>                | -       | -       | < C++11 | -       |VC10, VC11 |
+shared_ptr<>                | &#10003;| &#10003;| >=C++11 | >=C++11 | std::shared_ptr<> |
+shared_ptr<>                | -       | -       | < C++11 | -       | VC10, VC11 |
+stack_array<>               | &#10003;| -       | -       | -       | A stack-allocated array, fixed size |
+dyn_array<>                 | ?       | -       | -       | -       | A heap-allocated array, fixed size |
+**2.Bounds&nbsp;safety**    | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
+**2.1 Tag Types**           | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
+zstring                     | &#10003;| &#10003;| &#10003;| &#10003;| a char* (C-style string) |
+wzstring                    | -       | &#10003;| &#10003;| &#10003;| a wchar_t* (C-style string) |
+czstring                    | &#10003;| &#10003;| &#10003;| &#10003;| a const char* (C-style string) |
+cwzstring                   | -       | &#10003;| &#10003;| &#10003;| a const wchar_t* (C-style string) |
+**2.2 Views**               | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; | &nbsp; |
+span<>                      | &#10003;| &#10003;| 1D views| &#10003;| A view of contiguous T's, replace (*,len) |
+span_p<>                    | &#10003;| -       | -       | -       | A view of contiguous T's that ends at the first element for which predicate(*p) is true |
+as_span()                   | -       | &#10003;| &#10003;| &#10003;| Create a span |
+string_span                 | &#10003;| &#10003;| &#10003;| &#10003;| span&lt;char> |
+wstring_span                | -       | &#10003;| &#10003;| &#10060; C++98 >=C++11 &#10003;| span&lt;wchar_t > |
+cstring_span                | &#10003;| &#10003;| &#10003;| &#10060; C++98 >=C++11 &#10003;| span&lt;const char> |
+cwstring_span               | -       | &#10003;| &#10003;| &#10060; C++98 >=C++11 &#10003;| span&lt;const wchar_t > |
+ensure_z()                  | -       | &#10003;| &#10003;| &#10060; C++98 >=C++11 &#10003;| Create a cstring_span or cwstring_span |
+to_string()                 | -       | &#10003;| &#10003;| &#10060; C++98 >=C++11 &#10003;| Convert a string_span to std::string or std::wstring |
+**2.3 Indexing**            | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
+at()                        | &#10003;| &#10003;| >=C++11 | &#10060; C++98 >=C++11 &#10003;| Bounds-checked way of accessing<br>static arrays, std::array, std::vector |
+at()                        | -       | -       | < C++11 | -       | static arrays, std::vector<br>std::array : VC11 |
+**3. Assertions**           | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; | &nbsp; |
+Expects()                   | &#10003;| &#10003;| &#10003;| &#10003;| Precondition assertion |
+Ensures()                   | &#10003;| &#10003;| &#10003;| &#10003;| Postcondition assertion |
+**4. Utilities**            | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; | &nbsp; |
+final_act<>                 | &#10003;| &#10003;| >=C++11 | &#10003;| Action at the end of a scope |
+final_act                   | -       | -       | < C++11 | &#10003;| Currently only void(*)() |
+finally()                   | &#10003;| &#10003;| >=C++11 | &#10003;| Make a final_act<> |
+finally()                   | -       | -       | < C++11 | &#10003;| Make a final_act |
+narrow_cast<>               | &#10003;| &#10003;| &#10003;| &#10003;| Searchable narrowing casts of values |
+narrow()                    | &#10003;| &#10003;| &#10003;| &#10003;| Checked version of narrow_cast() |
+implicit                    | &#10003;| -       | &#10003;| -       | Symmetric with explicit |
+move_owner                  | ?       | -       | -       | -       | ... |
+**5. Concepts**             | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; | &nbsp; |
+...                         | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; | &nbsp; |
 
+
+## Reported to work with
+
+The table below mentions the compiler versions viboes-GSL cxx98 branch is reported to work with.
+
+OS        | Compiler   | Versions | Status | Language version | 
+---------:|:-----------|:---------|--------|------------------|
+Windows   | Clang/LLVM | ?        |&#10003;| ?                |
+&nbsp;    | GCC        | ?        |&#10003;| ?                |
+&nbsp;    | Visual C++<br>(Visual Studio)| 6 (6) via header [gsl-lite-vc6.h](include/gsl/gsl-lite-vc6.h)<br>8 (2005), 10 (2010), 11 (2012),<br>12 (2013), 14 (2015) |?| ? |
+GNU/Linux | Clang/LLVM | 3.4      | ? | ? | 
+&nbsp;    | GCC        | 5.1      | ? | ? |
+OS X      | Clang/LLVM | 3.7.0    |&#10003;| -std=c++98 -std=c++11 -std=c++14 -std=c++1z |
+&nbsp;    | Clang/LLVM | 3.9.0    |&#10003;| -std=c++98 -std=c++11 -std=c++14 -std=c++1z |
+&nbsp;    | GCC        | 5.2.0    |&#10003;| -std=c++98 -std=c++11 -std=c++14 -std=c++1z | 
+&nbsp;    | GCC        | 6.1.0    |&#10003;| -std=c++98 -std=c++11 -std=c++14 -std=c++1z |
+
+Please let me know if you have tried other platform/compilers.And of course, don't forget to report errors and suggestion improvements.
+
+
+## Other GSL implementations
+
+- Microsoft. [Guidelines Support Library (GSL)](https://github.com/microsoft/gsl).
+- Microsoft. [GSL Lite](https://github.com/martinmoene/gsl-lite).
+- Mattia Basaglia. CxxMiscLib [gsl.hpp](https://github.com/mbasaglia/Cxx-MiscLib/blob/master/include/misclib/gsl.hpp), [tests](https://github.com/mbasaglia/Cxx-MiscLib/blob/master/test/gsl.cpp).
+
+#@ Notes and references
+
+### References
+
+[1] [Standard C++ Foundation](https://isocpp.org/).  
+[2] Standard C++ Foundation. [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines).  
+[3] Microsoft. [Guidelines Support Library (GSL)](https://github.com/microsoft/gsl).  
+[4] Bjarne Stroustrup. [Writing good C++14 (PDF)](https://github.com/isocpp/CppCoreGuidelines/raw/master/talks/Stroustrup%20-%20CppCon%202015%20keynote.pdf) &mdash; [Video](https://www.youtube.com/watch?t=9&v=1OEu9C51K2A). CppCon 2015.  
+[5] Herb Sutter. [Writing good C++14&hellip; By default (PDF)](https://github.com/isocpp/CppCoreGuidelines/raw/master/talks/Sutter%20-%20CppCon%202015%20day%202%20plenary%20.pdf) &mdash; [Video](https://www.youtube.com/watch?v=hEx5DNLWGgA). CppCon 2015.  
+[6] Gabriel Dos Reis. [Contracts for Dependable C++ (PDF)](https://github.com/isocpp/CppCoreGuidelines/raw/master/talks/Contracts-for-Dependable-C%2B%2B.pdf)  &mdash; Video. CppCon 2015.  
+[7] Bjarne Stroustrup et al. [A brief introduction to C++’s model for type- and resource-safety](https://github.com/isocpp/CppCoreGuidelines/raw/master/docs/Introduction%20to%20type%20and%20resource%20safety.pdf).  
+[8] Herb Sutter and Neil MacIntosh. [Lifetime Safety: Preventing Leaks and Dangling](https://github.com/isocpp/CppCoreGuidelines/raw/master/docs/Lifetimes%20I%20and%20II%20-%20v0.9.1.pdf). 21 Sep 2015.
 Some useful links
+[9] Brief documentation of [GSL: Guideline support library](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-gsl).
+[10] [Talks and slides](https://github.com/isocpp/CppCoreGuidelines/tree/master/talks) related to GSL and the C++ Core Guielines in particular:
+[11] [Evolving array_view and string_view for safe C++ code](https://github.com/isocpp/CppCoreGuidelines/blob/master/talks/MacIntosh%20-%20A%20Few%20Good%20Types.pdf)     [Video](https://www.youtube.com/watch?v=C4Z3c4Sv52U)
 
-* Brief documentation of [GSL: Guideline support library](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-gsl).
-
-* [Talks and slides](https://github.com/isocpp/CppCoreGuidelines/tree/master/talks) related to GSL and the C++ Core Guielines in particular:
-
-  * “Evolving array_view and string_view for safe C++ code"
-   
-    * [Talk](https://www.youtube.com/watch?v=C4Z3c4Sv52U)
-    * [Slides](https://github.com/isocpp/CppCoreGuidelines/blob/master/talks/MacIntosh%20-%20A%20Few%20Good%20Types.pdf) 
-
-  Even if these presentation doesn't use completly the span interface it is worth wtching it.  
-
-  * "Writing Good C++14... By Default"
-  
-    * [Talk](https://www.youtube.com/watch?v=hEx5DNLWGgA&list=PLHTh1InhhwT75gykhs7pqcR_uSiG601oh&index=2)
-    * [Slides](https://github.com/isocpp/CppCoreGuidelines/blob/master/talks/Sutter%20-%20CppCon%202015%20day%202%20plenary%20.pdf)
 
 # Microsoft/GSL
 
