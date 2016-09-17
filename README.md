@@ -18,7 +18,7 @@ See also section [GSL: Guideline support library](https://github.com/isocpp/CppC
 V11-GSL means master branch of this fork viboes-GSL.
  
 Feature / library           | GSL     | M-GSL   | GSL-Lite| V11-GSL   | Notes |
-----------------------------|:-------:|:-------:|:-------:|:--------|
+----------------------------|:-------:|:-------:|:-------:|:--------:|:-------|
 **1.Lifetime&nbsp;safety**  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
 **1.1 Indirection**         | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
 not_null<>                  | &#10003;| &#10003;| &#10003;| &#10003;| Wrap any indirection and enforce non-null |
