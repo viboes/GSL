@@ -15,6 +15,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <UnitTest++/UnitTest++.h>
+#if __cplusplus >= 201102L
 #include <gsl/multi_span>
 
 #include <iostream>
@@ -1675,5 +1676,5 @@ SUITE(multi_span_tests)
         }
     }
 }
-
+#endif
 int main(int, const char* []) { return UnitTest::RunAllTests(); }

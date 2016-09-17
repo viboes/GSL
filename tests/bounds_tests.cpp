@@ -16,6 +16,8 @@
 
 
 #include <UnitTest++/UnitTest++.h>
+#if __cplusplus >= 201102L
+
 #include <gsl/multi_span>
 #include <vector>
 
@@ -97,7 +99,7 @@ SUITE(bounds_test)
 		CHECK(b5.size() == b6.size());
 	}
 }
-
+#endif
 int main(int, const char *[])
 {
 	return UnitTest::RunAllTests();

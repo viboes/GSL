@@ -13,6 +13,7 @@
 // THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
+#if __cplusplus >= 201102L
 
 #pragma once
 
@@ -2247,3 +2248,4 @@ general_span_iterator<Span> operator+(typename general_span_iterator<Span>::diff
 #endif // GSL_THROW_ON_CONTRACT_VIOLATION
 
 #endif // GSL_MULTI_SPAN_H
+#endif

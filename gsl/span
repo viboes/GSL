@@ -21,23 +21,23 @@
 #define GSL_SPAN_H
 
 #include "gsl_config.hpp"
-#include <boost/type_traits.hpp>
-#include "boost/static_assert.hpp"
-
-#include "stdex/type_traits.hpp"
-#include "stdex/algorithm.hpp"
 
 #include "gsl_assert"
 #include "gsl_byte"
 #include "gsl_util"
+
+#include "stdex/algorithm.hpp"
+#include "stdex/type_traits.hpp"
+
 #include <boost/array.hpp>
+#include <boost/move/move.hpp>
+#include "boost/static_assert.hpp"
+#include <boost/type_traits.hpp>
 
 #include <iterator>
 #include <limits>
 #include <stdexcept>
-#include <boost/type_traits.hpp>
 #include <utility>
-#include <boost/move/move.hpp>
 
 #ifdef _MSC_VER
 

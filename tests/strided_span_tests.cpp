@@ -15,6 +15,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <UnitTest++/UnitTest++.h>
+#if __cplusplus >= 201102L
 
 #include <gsl/multi_span>
 
@@ -742,7 +743,7 @@ SUITE(strided_span_tests)
 
     }
 }
-
+#endif
 int main(int, const char *[])
 {
 	return UnitTest::RunAllTests();
