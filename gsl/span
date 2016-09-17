@@ -397,7 +397,7 @@ public:
     // [span.cons], span constructors, copy, assignment, and destructor
     GSL_CONSTEXPR span() GSL_NOEXCEPT : storage_(NULLPTR, details::extent_type<0>()) {}
 
-    GSL_CONSTEXPR span(stdex::nullptr_t) GSL_NOEXCEPT : span() {}
+    GSL_CONSTEXPR span(stdex::nullptr_t) GSL_NOEXCEPT : storage_(NULLPTR, details::extent_type<0>()) {}
     GSL_CONSTEXPR span(pointer ptr, index_type count) : storage_(ptr, count) {}
 
     GSL_CONSTEXPR span(pointer firstElem, pointer lastElem)
@@ -437,7 +437,7 @@ public:
     // on Container to be a contiguous sequence container.
     template <class Container>  
     GSL_CONSTEXPR span(Container& cont,
-    typename boost::enable_if_c<
+      typename boost::enable_if_c<
                   !details::is_span<Container>::value && !details::is_std_array<Container>::value &&
                   boost::is_convertible<typename Container::pointer, pointer>::value
 // fixme
@@ -446,7 +446,7 @@ public:
                   boost::is_convertible<typename Container::pointer,
                                       decltype(boost::declval<Container>().data())>::value 
 #endif                                      
-                      >::type* = 0
+       >::type* = 0
 
     ) 
     : storage_(cont.data(), cont.size())
