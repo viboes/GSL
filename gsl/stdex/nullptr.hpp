@@ -24,14 +24,28 @@
 
 #if __cplusplus <= 199711L
 namespace stdex {
+  template <class T>
+  T* make_nullptr()
+  { return reinterpret_cast<T*>(0); }
+
+#if defined GSS_NULLPTR_IS_A_STRONG_TYPE
     struct nullptr_t {
         nullptr_t() {}
         template <class T>
         operator T*() const { return 0; }
     };
-}
-const stdex::nullptr_t NULLPTR;
 #else
+    typedef void* nullptr_t;
+#endif
+
+}
+#if defined GSS_NULLPTR_IS_A_STRONG_TYPE
+const stdex::nullptr_t NULLPTR;
+#endif
+#define  NULLPTR 0
+
+#else
+
 namespace stdex {
   using std::nullptr_t;
 }

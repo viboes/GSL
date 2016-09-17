@@ -17,6 +17,8 @@
 #include <UnitTest++/UnitTest++.h>
 #include <gsl/gsl>
 #include <vector>
+#include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/smart_ptr/make_shared.hpp>
 
 using namespace gsl;
 
@@ -62,6 +64,22 @@ SUITE(NotNullTests)
 
 #if __cplusplus >= 201102L
       not_null<std::shared_ptr<int> > x(std::make_shared<int>(10)); // shared_ptr<int> is NULLPTR assignable
+#else
+#if defined GSS_NULLPTR_IS_A_STRONG_TYPE
+      BOOST_STATIC_ASSERT_MSG((boost::is_convertible<stdex::nullptr_t, boost::shared_ptr<int> >::value), "nullptr_t cannot be converted to T.");
+#endif
+      int* ptr = NULLPTR;
+      CHECK(ptr == NULLPTR);
+      CHECK(!(ptr != NULLPTR));
+#if defined GSS_NULLPTR_IS_A_STRONG_TYPE
+      boost::shared_ptr<int> sptr = NULLPTR;
+#else
+      boost::shared_ptr<int> sptr(stdex::make_nullptr<int>());
+#endif
+      CHECK(sptr == NULLPTR);
+      CHECK(!(sptr != NULLPTR));
+
+      not_null<boost::shared_ptr<int> > x(boost::make_shared<int>(10)); // shared_ptr<int> is NULLPTR assignable
 #endif
     }
 

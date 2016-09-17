@@ -101,7 +101,9 @@ class not_null
 // fixme: Why it is not assignable?
     BOOST_STATIC_ASSERT_MSG((boost::is_assignable<T&, stdex::nullptr_t>::value), "T cannot be assigned nullptr.");
 #else
+#if defined GSS_NULLPTR_IS_A_STRONG_TYPE
     BOOST_STATIC_ASSERT_MSG((boost::is_convertible<stdex::nullptr_t, T>::value), "nullptr_t cannot be converted to T.");
+#endif
 #endif
 public:
     not_null(T t) : ptr_(t) { ensure_invariant(); }
@@ -117,23 +119,18 @@ public:
       ptr_=other.ptr_; return *this;
     });
 
-//fixme
-#if ! defined BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
-    template <typename U, typename Dummy = stdex::enable_if_t<boost::is_convertible<U, T>::value> >
-    not_null(const not_null<U>& other)
+    template <typename U>
+    not_null(const not_null<U>& other, typename boost::enable_if_c<boost::is_convertible<U, T>::value>::type * = 0)
     {
         *this = other;
     }
 
-    template <typename U, typename Dummy = stdex::enable_if_t<boost::is_convertible<U, T>::value> >
-    not_null& operator=(const not_null<U>& other)
+    template <typename U>
+    typename boost::enable_if_c<boost::is_convertible<U, T>::value, not_null&>::type operator=(const not_null<U>& other)
     {
         ptr_ = other.get();
         return *this;
     }
-#else
-
-#endif
 
     // prevents compilation when someone attempts to assign a nullptr
     BOOST_DELETED_FUNCTION(not_null(stdex::nullptr_t));
