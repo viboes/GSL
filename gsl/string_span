@@ -368,32 +368,35 @@ public:
     {
     }
 
-//fixme
-#if ! defined BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
-    template <class Container,
-              class = typename boost::enable_if_c<
+    template <class Container>
+    GSL_CONSTEXPR basic_string_span(const Container& cont,
+      typename boost::enable_if_c<
                   !details::is_basic_string_span<Container>::value &&
                   std::is_convertible<typename Container::pointer, pointer>::value 
 #if ! defined BOOST_NO_CXX11_DECLTYPE                  
                   &&
                   std::is_convertible<typename Container::pointer,
-                                      decltype(boost::declval<Container>().data())>::value>
-#endif                                      
-               >
-    GSL_CONSTEXPR basic_string_span(const Container& cont) : span_(cont)
+                                      decltype(boost::declval<Container>().data())>::value
+#endif        
+      >::type * = 0
+    ) : span_(cont)
     {
     }
 
     // from string_span
     template <
-        class OtherValueType, std::ptrdiff_t OtherExtent,
-        class = typename  boost::enable_if_c<std::is_convertible<
-            typename basic_string_span<OtherValueType, OtherExtent>::impl_type, impl_type>::value> >
-    GSL_CONSTEXPR basic_string_span(basic_string_span<OtherValueType, OtherExtent> other)
+        class OtherValueType, std::ptrdiff_t OtherExtent>
+    GSL_CONSTEXPR basic_string_span(basic_string_span<OtherValueType, OtherExtent> other,
+      typename boost::enable_if_c<
+        std::is_convertible<
+            typename basic_string_span<OtherValueType, OtherExtent>::impl_type, impl_type
+        >::value
+      >::type * = 0     
+    )
         : span_(other.data(), other.length())
     {
     }
-#endif
+    
     template <index_type Count>
     GSL_CONSTEXPR basic_string_span<element_type, Count> first() const
     {

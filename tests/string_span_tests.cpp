@@ -18,6 +18,7 @@
 
 #include <cstdlib>
 #include <gsl/string_span>
+#include <boost/assign.hpp>
 #include <vector>
 #include <map>
 
@@ -56,12 +57,10 @@ SUITE(string_span_tests)
     {
         wchar_t stack_string[] = L"Hello";
 
-#if __cplusplus >= 201102L
         {
             cwstring_span<>::type v = ensure_z(stack_string);
             CHECK(v.length() == 5);
         }
-#endif
         {
             cwstring_span<>::type v = stack_string;
             CHECK(v.length() == 5);
@@ -85,7 +84,6 @@ SUITE(string_span_tests)
         CHECK(v.length() == 5);
     }
 
-#if __cplusplus >= 201102L
     TEST(TestConversionToConst)
     {
         char stack_string[] = "Hello";
@@ -107,12 +105,12 @@ SUITE(string_span_tests)
 
     TEST(TestToString)
     {
-        auto s = gsl::to_string(cstring_span<>::type{});
+        std::string s = gsl::to_string(cstring_span<>::type());
         CHECK(s.length() == 0);
 
         char stack_string[] = "Hello";
         cstring_span<>::type v = ensure_z(stack_string);
-        auto s2 = gsl::to_string(v);
+        std::string s2 = gsl::to_string(v);
         CHECK(static_cast<cstring_span<>::type::index_type>(s2.length()) == v.length());
         CHECK(s2.length() == 5);
     }
@@ -145,7 +143,7 @@ SUITE(string_span_tests)
             const char ar2[10] = "Hello";
             const char* ptr = "Hello";
             const std::string str = "Hello";
-            const std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            const std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             gsl::span<const char> sp = ensure_z("Hello");
 
             // comparison to  literal
@@ -185,7 +183,7 @@ SUITE(string_span_tests)
             char ar2[10] = "Hello";
             char* ptr = ar;
             std::string str = "Hello";
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             gsl::span<char> sp = ensure_z(ar1);
 
             // comparison to static array with no null termination
@@ -219,7 +217,7 @@ SUITE(string_span_tests)
             const char ar1[] = "Hello";
             const char ar2[10] = "Hello";
             const std::string str = "Hello";
-            const std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            const std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             gsl::span<const char> sp = ensure_z("Hello");
 
             cstring_span<>::type span = "Hello";
@@ -256,8 +254,8 @@ SUITE(string_span_tests)
             char _ar2[10] = "Hello";
             char* _ptr = _ar;
             std::string _str = "Hello";
-            std::vector<char> _vec ( 'H', 'e', 'l', 'l', 'o' );
-            gsl::span<char> _sp{ _ar, 5 };
+            std::vector<char> _vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
+            gsl::span<char> _sp( _ar, 5 );
 
             CHECK(span == _ar);
             CHECK(span == _ar1);
@@ -279,7 +277,7 @@ SUITE(string_span_tests)
             CHECK(_vec == span);
             CHECK(_sp == span);
 
-            string_span<>::type _span{ _ptr, 5 };
+            string_span<>::type _span( _ptr, 5 );
 
             // non-const span, non-const other type
 
@@ -334,7 +332,7 @@ SUITE(string_span_tests)
         }
 
         {
-            std::vector<char> str1 ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> str1 = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             cstring_span<>::type span1 = str1;
             std::vector<char> str2 = std::move(str1);
             cstring_span<>::type span2 = str2;
@@ -354,7 +352,7 @@ SUITE(string_span_tests)
             const char ar2[10] = "Hello";
             const char* ptr = "Hello";
             const std::string str = "Hello";
-            const std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            const std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
 
             // comparison to  literal
             CHECK(span < cstring_span<>::type("Helloo"));
@@ -391,7 +389,7 @@ SUITE(string_span_tests)
             char ar2[10] = "Hello";
             char* ptr = ar;
             std::string str = "Hello";
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
 
 
             // comparison to static array with no null termination
@@ -425,7 +423,7 @@ SUITE(string_span_tests)
 
         // take the string as is
         {
-            auto str = std::string("hello");
+            std::string str = std::string("hello");
             cstring_span<>::type sp = str;
             CHECK((sp.length() == 5));
         }
@@ -507,21 +505,21 @@ SUITE(string_span_tests)
         // from const ptr and length
         {
             const char* ptr = "Hello";
-            cstring_span<>::type span{ ptr, 5 };
+            cstring_span<>::type span( ptr, 5 );
             CHECK(span.length() == 5);
         }
 
         // from const ptr and length, include 0
         {
             const char* ptr = "Hello";
-            cstring_span<>::type span{ ptr, 6 };
+            cstring_span<>::type span( ptr, 6 );
             CHECK(span.length() == 6);
         }
 
         // from const ptr and length, 0 inside
         {
             const char* ptr = "He\0lo";
-            cstring_span<>::type span{ ptr, 5 };
+            cstring_span<>::type span( ptr, 5 );
             CHECK(span.length() == 5);
         }
 
@@ -529,7 +527,7 @@ SUITE(string_span_tests)
         {
             char ar[] = { 'H', 'e', 'l', 'l', 'o' };
             char* ptr = ar;
-            cstring_span<>::type span{ ptr, 5 };
+            cstring_span<>::type span( ptr, 5 );
             CHECK(span.length() == 5);
         }
 
@@ -537,7 +535,7 @@ SUITE(string_span_tests)
         {
             char ar[] = { 'H', 'e', '\0', 'l', 'o' };
             char* ptr = ar;
-            cstring_span<>::type span{ ptr, 5 };
+            cstring_span<>::type span( ptr, 5 );
             CHECK(span.length() == 5);
         }
 
@@ -557,21 +555,21 @@ SUITE(string_span_tests)
 
         // from const vector
         {
-            const std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            const std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             cstring_span<>::type span = vec;
             CHECK(span.length() == 5);
         }
 
         // from non-const vector
         {
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             cstring_span<>::type span = vec;
             CHECK(span.length() == 5);
         }
 
         // from const span
         {
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             const span<const char> inner = vec;
             cstring_span<>::type span = inner;
             CHECK(span.length() == 5);
@@ -579,7 +577,7 @@ SUITE(string_span_tests)
 
         // from non-const span
         {
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             span<char> inner = vec;
             cstring_span<>::type span = inner;
             CHECK(span.length() == 5);
@@ -587,7 +585,7 @@ SUITE(string_span_tests)
 
         // from const string_span
         {
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             cstring_span<>::type tmp = vec;
             cstring_span<>::type span = tmp;
             CHECK(span.length() == 5);
@@ -595,7 +593,7 @@ SUITE(string_span_tests)
 
         // from non-const string_span
         {
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             string_span<>::type tmp = vec;
             cstring_span<>::type span = tmp;
             CHECK(span.length() == 5);
@@ -630,7 +628,7 @@ SUITE(string_span_tests)
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
             const char* ptr = "Hello";
-            string_span<>::type span{ ptr, 5 };
+            string_span<>::type span( ptr, 5 );
             CHECK(span.length() == 5);
 #endif
         }
@@ -639,7 +637,7 @@ SUITE(string_span_tests)
         {
             char ar[] = { 'H', 'e', 'l', 'l', 'o' };
             char* ptr = ar;
-            string_span<>::type span{ ptr, 5 };
+            string_span<>::type span( ptr, 5 );
             CHECK(span.length() == 5);
         }
 
@@ -662,7 +660,7 @@ SUITE(string_span_tests)
         // from const vector
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
-            const std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            const std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             string_span<>::type span = vec;
             CHECK(span.length() == 5);
 #endif
@@ -670,7 +668,7 @@ SUITE(string_span_tests)
 
         // from non-const vector
         {
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             string_span<>::type span = vec;
             CHECK(span.length() == 5);
         }
@@ -678,7 +676,7 @@ SUITE(string_span_tests)
         // from const span
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             const span<const char> inner = vec;
             string_span<>::type span = inner;
             CHECK(span.length() == 5);
@@ -687,7 +685,7 @@ SUITE(string_span_tests)
 
         // from non-const span
         {
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             span<char> inner = vec;
             string_span<>::type span = inner;
             CHECK(span.length() == 5);
@@ -696,7 +694,7 @@ SUITE(string_span_tests)
         // from non-const span of non-const data from const vector
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
-            const std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            const std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             const span<char> inner = vec;
             string_span<>::type span = inner;
             CHECK(span.length() == 5);
@@ -706,7 +704,7 @@ SUITE(string_span_tests)
         // from const string_span
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             cstring_span<>::type tmp = vec;
             string_span<>::type span = tmp;
             CHECK(span.length() == 5);
@@ -715,7 +713,7 @@ SUITE(string_span_tests)
 
         // from non-const string_span
         {
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             string_span<>::type tmp = vec;
             string_span<>::type span = tmp;
             CHECK(span.length() == 5);
@@ -724,7 +722,7 @@ SUITE(string_span_tests)
         // from non-const string_span from const vector
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
-            const std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            const std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             string_span<>::type tmp = vec;
             string_span<>::type span = tmp;
             CHECK(span.length() == 5);
@@ -733,7 +731,7 @@ SUITE(string_span_tests)
 
         // from const string_span of non-const data
         {
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             const string_span<>::type tmp = vec;
             string_span<>::type span = tmp;
             CHECK(span.length() == 5);
@@ -741,13 +739,13 @@ SUITE(string_span_tests)
     }
 
     template<typename T>
-    T move_wrapper(T&& t)
+    T move_wrapper(BOOST_FWD_REF(T) t)
     {
-        return std::move(t);
+        return boost::move(t);
     }
 
     template <class T>
-    T create() { return T{}; }
+    T create() { return T(); }
 
     template <class T>
     void use(basic_string_span<T, gsl::dynamic_extent> s) {}
@@ -757,17 +755,17 @@ SUITE(string_span_tests)
         // move string_span
         {
             cstring_span<>::type span = "Hello";
-            auto span1 = std::move(span);
+            cstring_span<>::type span1 = std::move(span);
             CHECK(span1.length() == 5);
         }
         {
             cstring_span<>::type span = "Hello";
-            auto span1 = move_wrapper(std::move(span));
+            cstring_span<>::type span1 = move_wrapper(std::move(span));
             CHECK(span1.length() == 5);
         }
         {
             cstring_span<>::type span = "Hello";
-            auto span1 = move_wrapper(std::move(span));
+            cstring_span<>::type span1 = move_wrapper(std::move(span));
             CHECK(span1.length() == 5);
         }
 
@@ -807,14 +805,14 @@ SUITE(string_span_tests)
         // move container
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             string_span<>::type span = std::move(vec);
             CHECK(span.length() == 5);
 #endif
         }
         {
 #ifdef CONFIRM_COMPILATION_ERRORS
-            std::vector<char> vec ( 'H', 'e', 'l', 'l', 'o' );
+            std::vector<char> vec = boost::assign::list_of( 'H')('e')('l')('l')('o' );
             string_span<>::type span = move_wrapper<std::vector<char>>(std::move(vec));
             CHECK(span.length() == 5);
 #endif
@@ -830,11 +828,12 @@ SUITE(string_span_tests)
     {
 #ifdef CONFIRM_COMPILATION_ERRORS
         cstring_span<>::type span = "Hello";
-        cwstring_span<>::type wspan{ span };
+        cwstring_span<>::type wspan( span );
         CHECK(wspan.length() == 5);
 #endif
     }
 
+#if __cplusplus >= 201102L
     czstring_span<>::type CreateTempName(string_span<>::type span)
     {
         Expects(span.size() > 1);
@@ -849,26 +848,29 @@ SUITE(string_span_tests)
         }
         span[last] = '\0';
 
-        auto ret = span.subspan(0, 4);
+        zstring_span<>::type ret = span.subspan(0, 4);
         return{ ret };
     }
-
+#endif
     TEST(zstring)
     {
 
         // create zspan from zero terminated string
+#if __cplusplus >= 201102L
         {
             char buf[1];
             buf[0] = '\0';
 
-            zstring_span<>::type zspan({ buf, 1 });
+            zstring_span<>::type zspan( buf, 1 );
 
             CHECK(strlen(zspan.assume_z()) == 0);
             CHECK(zspan.as_string_span().size() == 0);
             CHECK(zspan.ensure_z().size() == 0);
         }
+#endif
 
         // create zspan from non-zero terminated string
+#if __cplusplus >= 201102L
         {
             char buf[1];
             buf[0] = 'a';
@@ -876,8 +878,10 @@ SUITE(string_span_tests)
             auto workaround_macro = [&]() { zstring_span<>::type zspan({ buf, 1 }); };
             CHECK_THROW(workaround_macro(), fail_fast);
         }
+#endif
 
         // usage scenario: create zero-terminated temp file name and pass to a legacy API
+#if __cplusplus >= 201102L
         {
             char buf[10];
 
@@ -889,9 +893,11 @@ SUITE(string_span_tests)
                 CHECK(*(str+3) == '\0');
             }
         }
+#endif
 
     }
 
+#if __cplusplus >= 201102L
     cwzstring_span<>::type CreateTempNameW(wstring_span<>::type span)
     {
         Expects(span.size() > 1);
@@ -906,19 +912,20 @@ SUITE(string_span_tests)
         }
         span[last] = L'\0';
 
-        auto ret = span.subspan(0, 4);
+        wzstring_span<>::type ret = span.subspan(0, 4);
         return{ ret };
     }
-
+#endif
     TEST(wzstring)
     {
 
         // create zspan from zero terminated string
+#if __cplusplus >= 201102L
         {
             wchar_t buf[1];
             buf[0] = L'\0';
 
-            wzstring_span<>::type zspan({ buf, 1 });
+            wzstring_span<>::type zspan( buf, 1 );
 
             CHECK(wcsnlen(zspan.assume_z(), 1) == 0);
             CHECK(zspan.as_string_span().size() == 0);
@@ -933,8 +940,9 @@ SUITE(string_span_tests)
             auto workaround_macro = [&]() { wzstring_span<>::type zspan({ buf, 1 }); };
             CHECK_THROW(workaround_macro(), fail_fast);
         }
-
+#endif
         // usage scenario: create zero-terminated temp file name and pass to a legacy API
+#if __cplusplus >= 201102L
         {
             wchar_t buf[10];
 
@@ -946,8 +954,10 @@ SUITE(string_span_tests)
                 CHECK(*(str + 3) == L'\0');
             }
         }
+#endif
     }
 
+#if __cplusplus >= 201102L
     TEST(Issue305)
     {
         std::map<gsl::cstring_span<>::type, int> foo = { { "foo", 0 },{ "bar", 1 } };
