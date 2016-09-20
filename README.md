@@ -79,7 +79,7 @@ OS        | Compiler   | Versions | Status | Language version |
 ---------:|:-----------|:---------|--------|------------------|
 Windows   | Clang/LLVM | ?        |&#10003;| ?                |
 &nbsp;    | GCC        | ?        |&#10003;| ?                |
-&nbsp;    | Visual C++<br>(Visual Studio)| 6 (6) via header [gsl-lite-vc6.h](include/gsl/gsl-lite-vc6.h)<br>8 (2005), 10 (2010), 11 (2012),<br>12 (2013), 14 (2015) |?| ? |
+&nbsp;    | Visual C++<br>(Visual Studio)| 8 (2005), 10 (2010), 11 (2012),<br>12 (2013), 14 (2015) |?| ? |
 GNU/Linux | Clang/LLVM | 3.4      | ? | ? | 
 &nbsp;    | GCC        | 5.1      | ? | ? |
 OS X      | Clang/LLVM | 3.7.0    |&#10003;| -std=c++98 -std=c++11 -std=c++14 -std=c++1z |
