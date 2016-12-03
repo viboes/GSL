@@ -33,6 +33,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <memory>
 
 #ifdef _MSC_VER
 
@@ -81,7 +82,7 @@
 #pragma push_macro("noexcept")
 #endif
 
-#define noexcept /*noexcept*/
+//#define noexcept /*noexcept*/
 
 #endif // GSL_THROW_ON_CONTRACT_VIOLATION
 
@@ -137,7 +138,7 @@ namespace details
     template <class From, class To>
     struct is_allowed_element_type_conversion
         : public std::integral_constant<bool, std::is_same<From, stdex::remove_cv_t<To>>::value ||
-                                              std::is_convertible<From(*)[], To(*)[]>::value>
+                                              std::is_convertible<From(*)[], To (*)[]>::value>
     {
     };
 
@@ -168,6 +169,9 @@ namespace details
         {
         }
 
+#if __cplusplus >= 201402L
+        constexpr span_iterator<Span, IsConst>& operator=(const span_iterator<Span, IsConst>&) noexcept = default;
+#endif
         GSL_CONTRACT_CONSTEXPR reference operator*() const
         {
             Expects(span_);
@@ -389,6 +393,12 @@ public:
     {
     }
 
+    template<class ArrayElementType = std::add_pointer<element_type>>
+    constexpr span(const std::unique_ptr<ArrayElementType>& ptr, index_type count) : storage_(ptr.get(), count) {}
+
+    constexpr span(const std::unique_ptr<ElementType>& ptr) : storage_(ptr.get(), ptr.get() ? 1 : 0) {}
+    constexpr span(const std::shared_ptr<ElementType>& ptr) : storage_(ptr.get(), ptr.get() ? 1 : 0) {}
+
     // NB: the SFINAE here uses .data() as a incomplete/imperfect proxy for the requirement
     // on Container to be a contiguous sequence container.
     template <class Container,
@@ -397,7 +407,7 @@ public:
                   std::is_convertible<typename Container::pointer, pointer>::value &&
                   std::is_convertible<typename Container::pointer,
                                       decltype(std::declval<Container>().data())>::value>>
-    constexpr span(Container& cont) : span(cont.data(), cont.size())
+    constexpr span(Container& cont) : span(cont.data(), narrow<index_type>(cont.size()))
     {
     }
 
@@ -407,7 +417,7 @@ public:
                   std::is_convertible<typename Container::pointer, pointer>::value &&
                   std::is_convertible<typename Container::pointer,
                                       decltype(std::declval<Container>().data())>::value>>
-    constexpr span(const Container& cont) : span(cont.data(), cont.size())
+    constexpr span(const Container& cont) : span(cont.data(), narrow<index_type>(cont.size()))
     {
     }
 
@@ -424,8 +434,7 @@ public:
             details::is_allowed_extent_conversion<OtherExtent, Extent>::value &&
             details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>>
     constexpr span(const span<OtherElementType, OtherExtent>& other)
-        : storage_(static_cast<pointer>(other.data()),
-                   details::extent_type<OtherExtent>(other.size()))
+        : storage_(other.data(), details::extent_type<OtherExtent>(other.size()))
     {
     }
 
@@ -435,8 +444,7 @@ public:
             details::is_allowed_extent_conversion<OtherExtent, Extent>::value &&
             details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>>
     constexpr span(span<OtherElementType, OtherExtent>&& other)
-        : storage_(static_cast<pointer>(other.data()),
-                   details::extent_type<OtherExtent>(other.size()))
+        : storage_(other.data(), details::extent_type<OtherExtent>(other.size()))
     {
     }
 
@@ -499,7 +507,7 @@ public:
     constexpr index_type length() const noexcept { return size(); }
     constexpr index_type size() const noexcept { return storage_.size(); }
     constexpr index_type length_bytes() const noexcept { return size_bytes(); }
-    constexpr index_type size_bytes() const noexcept { return size() * sizeof(element_type); }
+    constexpr index_type size_bytes() const noexcept { return size() * narrow_cast<index_type>(sizeof(element_type)); }
     constexpr bool empty() const noexcept { return size() == 0; }
 
     // [span.elem], span element access
@@ -508,6 +516,8 @@ public:
         Expects(idx >= 0 && idx < storage_.size());
         return data()[idx];
     }
+
+    constexpr reference at(index_type idx) const { return this->operator[](idx); }
     constexpr reference operator()(index_type idx) const { return this->operator[](idx); }
     constexpr pointer data() const noexcept { return storage_.data(); }
 
@@ -628,9 +638,48 @@ as_writeable_bytes(span<ElementType, Extent> s) noexcept
     return {reinterpret_cast<byte*>(s.data()), s.size_bytes()};
 }
 
+//
+// make_span() - Utility functions for creating spans
+//
+template <class ElementType>
+span<ElementType>
+make_span(ElementType* ptr, typename span<ElementType>::index_type count)
+{ return span<ElementType>(ptr, count); }
+
+template <class ElementType>
+span<ElementType>
+make_span(ElementType* firstElem, ElementType* lastElem)
+{ return span<ElementType>(firstElem, lastElem); }
+
+template <class ElementType, size_t N>
+span<ElementType>
+make_span(ElementType (&arr)[N])
+{ return span<ElementType>(arr); }
+
+template <class Container>
+span<typename Container::value_type>
+make_span(Container &cont)
+{ return span<typename Container::value_type>(cont); }
+
+template <class Container>
+span<const typename Container::value_type>
+make_span(const Container &cont)
+{ return span<const typename Container::value_type>(cont); }
+
+template <class Ptr>
+span<typename Ptr::element_type>
+make_span(Ptr& cont, std::ptrdiff_t count)
+{ return span<typename Ptr::element_type>(cont, count); }
+
+template <class Ptr>
+span<typename Ptr::element_type>
+make_span(Ptr& cont)
+{ return span<typename Ptr::element_type>(cont); }
+
+
 // Specialization of gsl::at for span
 template <class ElementType, std::ptrdiff_t Extent>
-constexpr ElementType& at(const span<ElementType ,Extent>& s, size_t index)
+constexpr ElementType& at(const span<ElementType, Extent>& s, std::ptrdiff_t index)
 {
     // No bounds checking here because it is done in span::operator[] called below
     return s[index];

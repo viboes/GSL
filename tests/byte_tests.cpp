@@ -43,7 +43,7 @@ SUITE(byte_tests)
             byte b = byte(12);
             CHECK(static_cast<unsigned char>(b) == 12);
         }
-        
+
         {
             byte b = to_byte<12>();
             CHECK(static_cast<unsigned char>(b) == 12);
@@ -95,6 +95,38 @@ SUITE(byte_tests)
         CHECK(a == to_byte<0xF0>());
         a >>= 4;
         CHECK(a == to_byte<0x0F>());
+    }
+
+    TEST(to_integer)
+    {
+        byte b = to_byte<0x12>();
+
+        CHECK(0x12 == gsl::to_integer<char>(b));
+        CHECK(0x12 == gsl::to_integer<short>(b));
+        CHECK(0x12 == gsl::to_integer<long>(b));
+        CHECK(0x12 == gsl::to_integer<long long>(b));
+
+        CHECK(0x12 == gsl::to_integer<unsigned char>(b));
+        CHECK(0x12 == gsl::to_integer<unsigned short>(b));
+        CHECK(0x12 == gsl::to_integer<unsigned long>(b));
+        CHECK(0x12 == gsl::to_integer<unsigned long long>(b));
+
+//      CHECK(0x12 == gsl::to_integer<float>(b));   // expect compile-time error
+//      CHECK(0x12 == gsl::to_integer<double>(b));  // expect compile-time error
+    }
+
+    int modify_both(gsl::byte& b, int& i)
+    {
+        i = 10;
+        b = to_byte<5>();
+        return i;
+    }
+
+    TEST(aliasing)
+    {
+        int i{ 0 };
+        int res = modify_both(reinterpret_cast<byte&>(i), i);
+        CHECK(res == i);
     }
 }
 
