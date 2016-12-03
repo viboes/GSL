@@ -26,19 +26,25 @@
 
 #include "gsl_config.hpp"
 #include "stdex/type_traits.hpp"
+#include <boost/static_assert.hpp>
 
 #ifdef _MSC_VER
+
+#pragma warning(push)
+
+// don't warn about function style casts in byte related operators
+#pragma warning(disable : 26493)
 
 // MSVC 2013 workarounds
 #if _MSC_VER <= 1800
 
 // constexpr is not understood
 #pragma push_macro("constexpr")
-#define constexpr
+#define constexpr /*constexpr*/
 
 // noexcept is not understood
 #pragma push_macro("noexcept")
-#define noexcept
+#define noexcept /*noexcept*/
 
 #endif // _MSC_VER <= 1800
 
@@ -52,7 +58,7 @@ BOOST_SCOPED_ENUM_UT_DECLARE_BEGIN(byte, unsigned char)
 {
   none
 }
-BOOST_SCOPED_ENUM_DECLARE_END(byte);
+BOOST_SCOPED_ENUM_DECLARE_END(byte)
 
 template <class IntegerType>
 GSL_CONSTEXPR typename boost::enable_if_c<boost::is_integral<IntegerType>::value, byte&>::type 
@@ -79,43 +85,72 @@ GSL_CONSTEXPR typename boost::enable_if_c<boost::is_integral<IntegerType>::value
     return byte(boost::underlying_cast<unsigned char>(b) >> shift);
 }
 
-GSL_MUTABLE_CONSTEXPR byte& operator|=(byte& l, byte r) GSL_NOEXCEPT
+inline GSL_MUTABLE_CONSTEXPR byte& operator|=(byte& l, byte r) GSL_NOEXCEPT
 {
     return l = byte(boost::underlying_cast<unsigned char>(l) | boost::underlying_cast<unsigned char>(r));
 }
 
-GSL_CONSTEXPR byte operator|(byte l, byte r) GSL_NOEXCEPT
+inline GSL_CONSTEXPR byte operator|(byte l, byte r) GSL_NOEXCEPT
 {
     return byte(boost::underlying_cast<unsigned char>(l) + boost::underlying_cast<unsigned char>(r));
 }
 
-GSL_MUTABLE_CONSTEXPR byte& operator&=(byte& l, byte r) GSL_NOEXCEPT
+inline GSL_MUTABLE_CONSTEXPR byte& operator&=(byte& l, byte r) GSL_NOEXCEPT
 {
     return l = byte(boost::underlying_cast<unsigned char>(l) & boost::underlying_cast<unsigned char>(r));
 }
 
-GSL_CONSTEXPR byte operator&(byte l, byte r) GSL_NOEXCEPT
+inline GSL_CONSTEXPR byte operator&(byte l, byte r) GSL_NOEXCEPT
 {
     return byte(boost::underlying_cast<unsigned char>(l) & boost::underlying_cast<unsigned char>(r));
 }
 
-GSL_MUTABLE_CONSTEXPR byte& operator^=(byte& l, byte r) GSL_NOEXCEPT
+inline GSL_MUTABLE_CONSTEXPR byte& operator^=(byte& l, byte r) GSL_NOEXCEPT
 {
     return l = byte(boost::underlying_cast<unsigned char>(l) ^ boost::underlying_cast<unsigned char>(r));
 }
 
-GSL_CONSTEXPR byte operator^(byte l, byte r) GSL_NOEXCEPT
+inline GSL_CONSTEXPR byte operator^(byte l, byte r) GSL_NOEXCEPT
 {
     return byte(boost::underlying_cast<unsigned char>(l) ^ boost::underlying_cast<unsigned char>(r));
 }
 
-GSL_CONSTEXPR byte operator~(byte b) GSL_NOEXCEPT { return byte(~boost::underlying_cast<unsigned char>(b)); }
+inline GSL_CONSTEXPR byte operator~(byte b) GSL_NOEXCEPT { return byte(~boost::underlying_cast<unsigned char>(b)); }
 
 template <class IntegerType>
 GSL_CONSTEXPR typename boost::enable_if_c<boost::is_integral<IntegerType>::value, IntegerType>::type 
 to_integer(byte b) GSL_NOEXCEPT
 {
-    return IntegerType(b);
+    return boost::underlying_cast<IntegerType>(b);
+}
+
+template<bool E, typename T>
+inline GSL_CONSTEXPR byte to_byte_impl(T t) GSL_NOEXCEPT
+{
+    BOOST_STATIC_ASSERT_MSG(
+        E,
+        "gsl::to_byte(t) must be provided an unsigned char, otherwise data loss may occur. "
+        "If you are calling to_byte with an integer contant use: gsl::to_byte<t>() version."
+    );
+    return boost::underlying_cast<byte>(t);
+}
+template<>
+inline GSL_CONSTEXPR byte to_byte_impl<true, unsigned char>(unsigned char t) GSL_NOEXCEPT
+{
+     return byte(t);
+}
+
+template<typename T>
+inline GSL_CONSTEXPR byte to_byte(T t) GSL_NOEXCEPT
+{
+     return to_byte_impl<std::is_same<T, unsigned char>::value, T>(t);
+}
+
+template <int I>
+inline GSL_CONSTEXPR byte to_byte() GSL_NOEXCEPT
+{
+    BOOST_STATIC_ASSERT_MSG(I >= 0 && I <= 255, "gsl::byte only has 8 bits of storage, values must be in range 0-255");
+    return byte(I);
 }
 } // namespace gsl
 
@@ -130,6 +165,8 @@ to_integer(byte b) GSL_NOEXCEPT
 #pragma pop_macro("noexcept")
 
 #endif // _MSC_VER <= 1800
+
+#pragma warning(pop)
 
 #endif // _MSC_VER
 

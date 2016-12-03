@@ -37,13 +37,13 @@
 
 // No MSVC does constexpr fully yet
 #pragma push_macro("constexpr")
-#define constexpr
+#define constexpr /*constexpr*/
 
 // MSVC 2013 workarounds
 #if _MSC_VER <= 1800
 // noexcept is not understood
 #pragma push_macro("noexcept")
-#define noexcept
+#define noexcept /*noexcept*/
 
 // turn off some misguided warnings
 #pragma warning(push)
@@ -133,10 +133,10 @@ public:
     }
 
     // prevents compilation when someone attempts to assign a nullptr
-    BOOST_DELETED_FUNCTION(not_null(stdex::nullptr_t));
-    BOOST_DELETED_FUNCTION(not_null(int));
-    BOOST_DELETED_FUNCTION(not_null<T>& operator=(stdex::nullptr_t));
-    BOOST_DELETED_FUNCTION(not_null<T>& operator=(int));
+    BOOST_DELETED_FUNCTION(not_null(stdex::nullptr_t))
+    BOOST_DELETED_FUNCTION(not_null(int))
+    BOOST_DELETED_FUNCTION(not_null<T>& operator=(stdex::nullptr_t))
+    BOOST_DELETED_FUNCTION(not_null<T>& operator=(int))
 
 public:
     T get() const
@@ -162,14 +162,14 @@ private:
 
     // unwanted operators...pointers only point to single objects!
     // TODO ensure all arithmetic ops on this type are unavailable
-    BOOST_DELETED_FUNCTION(not_null<T>& operator++());
-    BOOST_DELETED_FUNCTION(not_null<T>& operator--());
-    BOOST_DELETED_FUNCTION(not_null<T> operator++(int));
-    BOOST_DELETED_FUNCTION(not_null<T> operator--(int));
-    BOOST_DELETED_FUNCTION(not_null<T>& operator+(size_t));
-    BOOST_DELETED_FUNCTION(not_null<T>& operator+=(size_t));
-    BOOST_DELETED_FUNCTION(not_null<T>& operator-(size_t));
-    BOOST_DELETED_FUNCTION(not_null<T>& operator-=(size_t));
+    BOOST_DELETED_FUNCTION(not_null<T>& operator++())
+    BOOST_DELETED_FUNCTION(not_null<T>& operator--())
+    BOOST_DELETED_FUNCTION(not_null<T> operator++(int))
+    BOOST_DELETED_FUNCTION(not_null<T> operator--(int))
+    BOOST_DELETED_FUNCTION(not_null<T>& operator+(size_t))
+    BOOST_DELETED_FUNCTION(not_null<T>& operator+=(size_t))
+    BOOST_DELETED_FUNCTION(not_null<T>& operator-(size_t))
+    BOOST_DELETED_FUNCTION(not_null<T>& operator-=(size_t))
 };
 
 } // namespace gsl

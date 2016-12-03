@@ -52,6 +52,7 @@ wstring_span                | -       | &#10003;| &#10003;| &#10003;| span&lt;wc
 cstring_span                | &#10003;| &#10003;| &#10003;| &#10003;| span&lt;const char> |
 cwstring_span               | -       | &#10003;| &#10003;| &#10003;| span&lt;const wchar_t > |
 ensure_z()                  | -       | &#10003;| &#10003;| C++98 &#10060; >=C++11 &#10003;| Create a cstring_span or cwstring_span |
+>>>>>>> master
 to_string()                 | -       | &#10003;| &#10003;| &#10003;| Convert a string_span to std::string or std::wstring |
 **2.3 Indexing**            | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp;  | &nbsp; |
 at()                        | &#10003;| &#10003;| >=C++11 | &#10003;| Bounds-checked way of accessing<br>static arrays, std::array, std::vector |
@@ -92,6 +93,15 @@ Please let me know if you have tried other platform/compilers.And of course, don
 ## Dependencies
 
 * Boost
+=======
+&nbsp;    | Visual C++<br>(Visual Studio)| 8 (2005), 10 (2010), 11 (2012),<br>12 (2013), 14 (2015) |?| ? |
+GNU/Linux | Clang/LLVM | 3.4      | ? | ? | 
+&nbsp;    | GCC        | 5.1      | ? | ? |
+OS X      | Clang/LLVM | 3.7.0    |&#10003;| -std=c++11 -std=c++14 -std=c++1z |
+&nbsp;    | Clang/LLVM | 3.9.0    |&#10003;| -std=c++11 -std=c++14 -std=c++1z |
+&nbsp;    | GCC        | 5.2.0    |&#10003;| -std=c++11 -std=c++14 -std=c++1z | 
+&nbsp;    | GCC        | 6.1.0    |&#10003;| -std=c++11 -std=c++14 -std=c++1z |
+
 
 ## Other GSL implementations
 
@@ -138,10 +148,11 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 # Quick Start
 ## Supported Platforms
-The test suite that exercises GSL has been built and passes successfully on the following platforms:
+The test suite that exercises GSL has been built and passes successfully on the following platforms:<sup>1)</sup>
 
 * Windows using Visual Studio 2013
 * Windows using Visual Studio 2015
+* Windows using Visual Studio 2017
 * Windows using Clang/LLVM 3.6
 * Windows using GCC 5.1
 * GNU/Linux using Clang/LLVM 3.6
@@ -152,6 +163,8 @@ The test suite that exercises GSL has been built and passes successfully on the 
 
 > If you successfully port GSL to another platform, we would love to hear from you. Please submit an issue to let us know. Also please consider
 contributing any changes that were necessary back to this project to benefit the wider community.
+
+<sup>1)</sup> For `gsl::byte` to work correctly with Clang and GCC you might have to use the ` -fno-strict-aliasing` compiler option.
 
 ## Building the tests
 To build the tests, you will require the following:

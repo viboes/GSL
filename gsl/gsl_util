@@ -32,7 +32,7 @@
 
 // No MSVC does constexpr fully yet
 #pragma push_macro("constexpr")
-#define constexpr
+#define constexpr /*constexpr*/
 
 #pragma warning(push)
 #pragma warning(disable : 4127) // conditional expression is constant
@@ -41,7 +41,7 @@
 #if _MSC_VER <= 1800
 // noexcept is not understood
 #pragma push_macro("noexcept")
-#define noexcept
+#define noexcept /*noexcept*/
 
 // turn off some misguided warnings
 #pragma warning(push)
@@ -96,11 +96,19 @@ inline final_act<F> finally(BOOST_FWD_REF(F) f) GSL_NOEXCEPT
 }
 
 // narrow_cast(): a searchable way to do narrowing casts of values
+#if _MSC_VER <= 1800
 template <class T, class U>
 inline GSL_CONSTEXPR T narrow_cast(U u) GSL_NOEXCEPT
 {
     return static_cast<T>(u);
 }
+#else
+template <class T, class U>
+inline constexpr T narrow_cast(U&& u) noexcept
+{
+    return static_cast<T>(std::forward<U>(u));
+}
+#endif
 
 struct narrowing_error : public std::exception
 {
@@ -130,32 +138,32 @@ inline T narrow(U u)
 // at() - Bounds-checked way of accessing static arrays, boost::array, std::vector
 //
 template <class T, size_t N>
-GSL_CONTRACT_CONSTEXPR T& at(T (&arr)[N], size_t index)
+GSL_CONTRACT_CONSTEXPR T& at(T (&arr)[N], std::ptrdiff_t index)
 {
-    Expects(index < N);
-    return arr[index];
+    Expects(index >= 0 && index < narrow_cast<std::ptrdiff_t>(N));
+    return arr[static_cast<size_t>(index)];
 }
 
 template <class T, size_t N>
-GSL_CONTRACT_CONSTEXPR T& at(boost::array<T, N>& arr, size_t index)
+GSL_CONTRACT_CONSTEXPR T& at(boost::array<T, N>& arr, std::ptrdiff_t index)
 {
-    Expects(index < N);
-    return arr[index];
+    Expects(index >= 0 && index < narrow_cast<std::ptrdiff_t>(N));
+    return arr[static_cast<size_t>(index)];
 }
 
 template <class Cont>
-GSL_CONTRACT_CONSTEXPR typename Cont::value_type& at(Cont& cont, size_t index)
+GSL_CONTRACT_CONSTEXPR typename Cont::value_type& at(Cont& cont, std::ptrdiff_t index)
 {
-    Expects(index < cont.size());
-    return cont[index];
+    Expects(index >= 0 && index < narrow_cast<std::ptrdiff_t>(cont.size()));
+    return cont[static_cast<typename Cont::size_type>(index)];
 }
 
 // fixme
 #if ! defined BOOST_NO_CXX11_HDR_INITIALIZER_LIST
 template <class T>
-GSL_CONTRACT_CONSTEXPR const T& at(std::initializer_list<T> cont, size_t index)
+GSL_CONTRACT_CONSTEXPR const T& at(std::initializer_list<T> cont, std::ptrdiff_t index)
 {
-    Expects(index < cont.size());
+    Expects(index >= 0 && index < narrow_cast<std::ptrdiff_t>(cont.size()));
     return *(cont.begin() + index);
 }
 #endif

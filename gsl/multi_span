@@ -50,7 +50,7 @@
 
 // No MSVC does constexpr fully yet
 #pragma push_macro("constexpr")
-#define constexpr
+#define constexpr /*constexpr*/
 
 // VS 2013 workarounds
 #if _MSC_VER <= 1800
@@ -61,7 +61,7 @@
 // noexcept is not understood
 #ifndef GSL_THROW_ON_CONTRACT_VIOLATION
 #pragma push_macro("noexcept")
-#define noexcept /* nothing */
+#define noexcept /*noexcept*/
 #endif
 
 // turn off some misguided warnings
@@ -79,7 +79,7 @@
 #pragma push_macro("noexcept")
 #endif
 
-#define noexcept /* nothing */
+//#define noexcept /*noexcept*/
 
 #endif // GSL_THROW_ON_CONTRACT_VIOLATION
 
@@ -314,8 +314,6 @@ namespace details
         {
         }
 
-        BoundsRanges(const BoundsRanges&) = default;
-        BoundsRanges& operator=(const BoundsRanges&) = default;
         BoundsRanges(const std::ptrdiff_t* const) {}
         BoundsRanges() = default;
 
@@ -352,9 +350,9 @@ namespace details
         static const size_t DynamicNum = Base::DynamicNum + 1;
         static const size_type CurrentRange = dynamic_range;
         static const size_type TotalSize = dynamic_range;
-        const size_type m_bound;
-
-        BoundsRanges(const BoundsRanges&) = default;
+    private:
+        size_type m_bound;
+    public:
 
         BoundsRanges(const std::ptrdiff_t* const arr)
             : Base(arr + 1), m_bound(*arr * this->Base::totalSize())
@@ -426,8 +424,6 @@ namespace details
         static const size_type TotalSize =
             Base::TotalSize == dynamic_range ? dynamic_range : CurrentRange * Base::TotalSize;
 
-        BoundsRanges(const BoundsRanges&) = default;
-
         BoundsRanges(const std::ptrdiff_t* const arr) : Base(arr) {}
         BoundsRanges() = default;
 
@@ -449,7 +445,7 @@ namespace details
         template <typename T, size_t Dim = 0>
         size_type linearize(const T& arr) const
         {
-            Expects(arr[Dim] < CurrentRange); // Index is out of range
+            Expects(arr[Dim] >= 0 && arr[Dim] < CurrentRange); // Index is out of range
             return this->Base::totalSize() * arr[Dim] +
                    this->Base::template linearize<T, Dim + 1>(arr);
         }
@@ -639,12 +635,13 @@ public:
 
     constexpr static_bounds() = default;
 
+#if 0
     GSL_MUTABLE_CONSTEXPR static_bounds& operator=(const static_bounds& otherBounds)
     {
         new (&m_ranges) MyRanges(otherBounds.m_ranges);
         return *this;
     }
-
+#endif
     constexpr sliced_type slice() const noexcept
     {
         return sliced_type{static_cast<const details::BoundsRanges<RestRanges...>&>(m_ranges)};
@@ -1467,7 +1464,7 @@ public:
     constexpr size_type length() const noexcept { return this->size(); }
 
     // length of the multi_span in bytes
-    constexpr size_type size_bytes() const noexcept { return sizeof(value_type) * this->size(); }
+    constexpr size_type size_bytes() const noexcept { return narrow_cast<size_type>(sizeof(value_type)) * this->size(); }
 
     // length of the multi_span in bytes
     constexpr size_type length_bytes() const noexcept { return this->size_bytes(); }
@@ -1504,9 +1501,6 @@ public:
     GSL_MUTABLE_CONSTEXPR reference operator()(FirstIndex index, OtherIndices... indices)
     {
         index_type idx = {narrow_cast<std::ptrdiff_t>(index),
-                          //narrow_cast<std::ptrdiff_t>(indices...)}; // BUG erreur: no matching function for call to ‘narrow_cast()’
-                          // narrow_cast<std::ptrdiff_t>(indices...)};
-                          
                           narrow_cast<std::ptrdiff_t>(indices)...};
         return this->operator[](idx);
     }
@@ -1519,7 +1513,7 @@ public:
     template <bool Enabled = (Rank > 1), typename Ret = stdex::enable_if_t<Enabled, sliced_type>>
     GSL_CONTRACT_CONSTEXPR Ret operator[](size_type idx) const noexcept
     {
-        Expects(idx < bounds_.size()); // index is out of bounds of the array
+        Expects(idx >= 0 && idx < bounds_.size()); // index is out of bounds of the array
         const size_type ridx = idx * bounds_.stride();
 
         // index is out of bounds of the underlying data
@@ -1672,7 +1666,8 @@ GSL_CONTRACT_CONSTEXPR auto as_multi_span(multi_span<const byte, Dimensions...> 
              ConstByteSpan::bounds_type::static_size % narrow_cast<std::ptrdiff_t>(sizeof(U)) == 0),
         "Target type must be a trivial type and its size must match the byte array size");
 
-    Expects((s.size_bytes() % sizeof(U)) == 0 && (s.size_bytes() / sizeof(U)) < PTRDIFF_MAX);
+    Expects((s.size_bytes() % narrow_cast<std::ptrdiff_t>(sizeof(U))) == 0 && 
+            (s.size_bytes() / narrow_cast<std::ptrdiff_t>(sizeof(U))) < PTRDIFF_MAX);
     return {reinterpret_cast<const U*>(s.data()),
             s.size_bytes() / narrow_cast<std::ptrdiff_t>(sizeof(U))};
 }

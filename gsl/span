@@ -33,11 +33,14 @@
 #include <boost/move/move.hpp>
 #include "boost/static_assert.hpp"
 #include <boost/type_traits.hpp>
+#include <boost/move/unique_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <iterator>
 #include <limits>
 #include <stdexcept>
 #include <utility>
+#include <memory>
 
 #ifdef _MSC_VER
 
@@ -53,7 +56,7 @@
 
 // No MSVC does constexpr fully yet
 #pragma push_macro("constexpr")
-#define constexpr
+#define constexpr /*constexpr*/
 
 // VS 2013 workarounds
 #if _MSC_VER <= 1800
@@ -65,7 +68,7 @@
 // noexcept is not understood
 #ifndef GSL_THROW_ON_CONTRACT_VIOLATION
 #pragma push_macro("noexcept")
-#define noexcept /* nothing */
+#define noexcept /*noexcept*/
 #endif
 
 #pragma push_macro("alignof")
@@ -86,7 +89,7 @@
 #pragma push_macro("noexcept")
 #endif
 
-#define noexcept /* nothing */
+//#define noexcept /*noexcept*/
 
 #endif // GSL_THROW_ON_CONTRACT_VIOLATION
 
@@ -131,7 +134,7 @@ namespace details
     struct is_std_array : public is_std_array_oracle<typename boost::remove_cv<T>::type >
     {
     };
-
+#if 0
     template <class From, class To>
     struct is_allowed_pointer_conversion
         : public boost::integral_constant<bool, boost::is_pointer<From>::value &&
@@ -148,7 +151,7 @@ namespace details
                         boost::is_convertible<From, To>::value>
     {
     };
-
+#endif
     template <std::ptrdiff_t From, std::ptrdiff_t To>
     struct is_allowed_extent_conversion
         : public boost::integral_constant<bool, From == To || From == gsl::dynamic_extent ||
@@ -158,6 +161,7 @@ namespace details
 
     template <class From, class To>
     struct is_allowed_element_type_conversion
+#if 0
         : public boost::integral_constant<bool, boost::is_same<From, typename boost::remove_cv<To>::type >::value ||
                                                   is_allowed_pointer_conversion<From, To>::value ||
                                                   is_allowed_integral_conversion<From, To>::value>
@@ -172,6 +176,9 @@ namespace details
 
     template <class From>
     struct is_allowed_element_type_conversion<From, const byte> : public boost::true_type
+#endif
+        : public boost::integral_constant<bool, boost::is_same<From, typename boost::remove_cv<To>::type>::value ||
+                                              boost::is_convertible<From(*)[], To (*)[]>::value>
     {
     };
 
@@ -201,6 +208,9 @@ namespace details
         GSL_CONSTEXPR span_iterator(const span_iterator<Span, false>& other) GSL_NOEXCEPT
             : span_(other.span_), index_(other.index_) {}
 
+#if __cplusplus >= 201402L
+        GSL_CONSTEXPR span_iterator<Span, IsConst>& operator=(const span_iterator<Span, IsConst>&) noexcept = default;
+#endif
         GSL_CONTRACT_CONSTEXPR reference operator*() const
         {
             Expects(span_);
@@ -433,6 +443,13 @@ public:
     {
     }
 
+    template<class ArrayElementType>
+    //= boost::add_pointer<element_type>
+    GSL_CONSTEXPR span(const boost::movelib::unique_ptr<ArrayElementType>& ptr, index_type count) : storage_(ptr.get(), count) {}
+
+    GSL_CONSTEXPR span(const boost::movelib::unique_ptr<ElementType>& ptr) : storage_(ptr.get(), ptr.get() ? 1 : 0) {}
+    GSL_CONSTEXPR span(const boost::shared_ptr<ElementType>& ptr) : storage_(ptr.get(), ptr.get() ? 1 : 0) {}
+
     // NB: the SFINAE here uses .data() as a incomplete/imperfect proxy for the requirement
     // on Container to be a contiguous sequence container.
     template <class Container>  
@@ -449,7 +466,7 @@ public:
        >::type* = 0
 
     ) 
-    : storage_(cont.data(), cont.size())
+    : storage_(cont.data(), narrow<index_type>(cont.size()))
     {
     }
 
@@ -465,7 +482,7 @@ public:
                                       decltype(boost::declval<Container>().data())>::value 
 #endif                                      
                       >::type * = 0    
-    ) : storage_(cont.data(), cont.size())
+    ) : storage_(cont.data(), narrow<index_type>(cont.size()))
     {
     }
 
@@ -480,7 +497,7 @@ public:
     typename boost::enable_if_c<
             details::is_allowed_extent_conversion<OtherExtent, Extent>::value &&
             details::is_allowed_element_type_conversion<OtherElementType, element_type>::value>::type* =0)
-        : storage_(reinterpret_cast<pointer>(other.data()),
+        : storage_(other.data(),
                    details::extent_type<OtherExtent>(other.size()))
     {
     }
@@ -493,7 +510,7 @@ public:
             details::is_allowed_element_type_conversion<OtherElementType, element_type>::value
           >::type* = 0
         )
-        : storage_(reinterpret_cast<pointer>(other.data()),
+        : storage_(other.data(),
                    details::extent_type<OtherExtent>(other.size()))
     {
     }
@@ -567,7 +584,7 @@ public:
     GSL_CONSTEXPR index_type length() const GSL_NOEXCEPT { return size(); }
     GSL_CONSTEXPR index_type size() const GSL_NOEXCEPT { return storage_.size(); }
     GSL_CONSTEXPR index_type length_bytes() const GSL_NOEXCEPT { return size_bytes(); }
-    GSL_CONSTEXPR index_type size_bytes() const GSL_NOEXCEPT { return size() * sizeof(element_type); }
+    GSL_CONSTEXPR index_type size_bytes() const GSL_NOEXCEPT { return size() * narrow_cast<index_type>(sizeof(element_type)); }
     GSL_CONSTEXPR bool empty() const GSL_NOEXCEPT { return size() == 0; }
 
     // [span.elem], span element access
@@ -576,6 +593,7 @@ public:
         Expects(idx >= 0 && idx < storage_.size());
         return data()[idx];
     }
+    GSL_CONSTEXPR reference at(index_type idx) const { return this->operator[](idx); }
     GSL_CONSTEXPR reference operator()(index_type idx) const { return this->operator[](idx); }
     GSL_CONSTEXPR pointer data() const GSL_NOEXCEPT { return storage_.data(); }
 
@@ -697,6 +715,53 @@ as_writeable_bytes(span<ElementType, Extent> s) GSL_NOEXCEPT
 {
     typedef span<byte, details::calculate_byte_size<ElementType, Extent>::value> result_type;
     return result_type(reinterpret_cast<byte*>(s.data()), s.size_bytes());
+}
+
+//
+// make_span() - Utility functions for creating spans
+//
+template <class ElementType>
+span<ElementType>
+make_span(ElementType* ptr, typename span<ElementType>::index_type count)
+{ return span<ElementType>(ptr, count); }
+
+template <class ElementType>
+span<ElementType>
+make_span(ElementType* firstElem, ElementType* lastElem)
+{ return span<ElementType>(firstElem, lastElem); }
+
+template <class ElementType, size_t N>
+span<ElementType>
+make_span(ElementType (&arr)[N])
+{ return span<ElementType>(arr); }
+
+template <class Container>
+span<typename Container::value_type>
+make_span(Container &cont)
+{ return span<typename Container::value_type>(cont); }
+
+template <class Container>
+span<const typename Container::value_type>
+make_span(const Container &cont)
+{ return span<const typename Container::value_type>(cont); }
+
+template <class Ptr>
+span<typename Ptr::element_type>
+make_span(Ptr& cont, std::ptrdiff_t count)
+{ return span<typename Ptr::element_type>(cont, count); }
+
+template <class Ptr>
+span<typename Ptr::element_type>
+make_span(Ptr& cont)
+{ return span<typename Ptr::element_type>(cont); }
+
+
+// Specialization of gsl::at for span
+template <class ElementType, std::ptrdiff_t Extent>
+GSL_CONSTEXPR ElementType& at(const span<ElementType, Extent>& s, std::ptrdiff_t index)
+{
+    // No bounds checking here because it is done in span::operator[] called below
+    return s[index];
 }
 
 } // namespace gsl

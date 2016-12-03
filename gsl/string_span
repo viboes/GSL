@@ -40,7 +40,7 @@
 
 // No MSVC does constexpr fully yet
 #pragma push_macro("constexpr")
-#define constexpr /* nothing */
+#define constexpr /*constexpr*/
 
 #pragma warning(push)
 
@@ -60,7 +60,7 @@
 // noexcept is not understood
 #ifndef GSL_THROW_ON_CONTRACT_VIOLATION
 #pragma push_macro("noexcept")
-#define noexcept /* nothing */
+#define noexcept /*noexcept*/
 #endif
 
 #endif // _MSC_VER <= 1800
@@ -73,7 +73,7 @@
 #pragma push_macro("noexcept")
 #endif
 
-#define noexcept /* nothing */
+//#define noexcept /*noexcept*/
 
 #endif // GSL_THROW_ON_CONTRACT_VIOLATION
 
@@ -124,6 +124,38 @@ template <std::ptrdiff_t Extent = dynamic_extent>
 struct wzstring { typedef typename basic_zstring<wchar_t, Extent>::type type; };
 
 #endif
+namespace details
+{
+    inline std::ptrdiff_t string_length(const char *str, std::ptrdiff_t n)
+    {
+        if (str == nullptr || n <= 0)
+            return 0;
+
+        span<const char> str_span(str, n);
+
+        std::ptrdiff_t len = 0;
+        while (len < n && str_span[len])
+            len++;
+
+        return len;
+    }
+
+    inline std::ptrdiff_t wstring_length(const wchar_t *str, std::ptrdiff_t n)
+    {
+        if (str == nullptr || n <= 0)
+            return 0;
+
+        span<const wchar_t> str_span(str, n);
+
+        std::ptrdiff_t len = 0;
+        while (len < n && str_span[len])
+            len++;
+
+        return len;
+    }
+}
+
+
 //
 // ensure_sentinel()
 //
@@ -156,30 +188,30 @@ inline span<T, dynamic_extent> ensure_z(T* const& sz, std::ptrdiff_t max = PTRDI
 // overloads to share an implementation
 inline span<char, dynamic_extent> ensure_z(char* const& sz, std::ptrdiff_t max)
 {
-    std::size_t len = strnlen(sz, narrow_cast<size_t>(max));
+    auto len = details::string_length(sz, max);
     Ensures(sz[len] == 0);
-    return span<char, dynamic_extent>(sz, static_cast<std::ptrdiff_t>(len));
+    return span<char, dynamic_extent>(sz, len);
 }
 
 inline span<const char, dynamic_extent> ensure_z(const char* const& sz, std::ptrdiff_t max)
 {
-    std::size_t len = strnlen(sz, narrow_cast<size_t>(max));
+    std::size_t len = details::string_length(sz, max);
     Ensures(sz[len] == 0);
-    return span<const char, dynamic_extent>(sz, static_cast<std::ptrdiff_t>(len));
+    return span<const char, dynamic_extent>(sz, len);
 }
 
 inline span<wchar_t, dynamic_extent> ensure_z(wchar_t* const& sz, std::ptrdiff_t max)
 {
-    std::size_t len = wcsnlen(sz, narrow_cast<size_t>(max));
+    std::size_t len = details::wstring_length(sz, max);
     Ensures(sz[len] == 0);
-    return span<wchar_t, dynamic_extent>(sz, static_cast<std::ptrdiff_t>(len));
+    return span<wchar_t, dynamic_extent>(sz, len);
 }
 
 inline span<const wchar_t, dynamic_extent> ensure_z(const wchar_t* const& sz, std::ptrdiff_t max)
 {
-    std::size_t len = wcsnlen(sz, narrow_cast<size_t>(max));
+    std::size_t len = details::wstring_length(sz, max);
     Ensures(sz[len] == 0);
-    return span<const wchar_t, dynamic_extent>(sz, static_cast<std::ptrdiff_t>(len));
+    return span<const wchar_t, dynamic_extent>(sz, len);
 }
 
 template <typename T, size_t N>
@@ -225,7 +257,7 @@ namespace details
     {
         std::ptrdiff_t operator()(char* const ptr, std::ptrdiff_t length) GSL_NOEXCEPT
         {
-            return narrow_cast<std::ptrdiff_t>(strnlen(ptr, narrow_cast<size_t>(length)));
+            return details::string_length(ptr, length);
         }
     };
 
@@ -234,7 +266,7 @@ namespace details
     {
         std::ptrdiff_t operator()(wchar_t* const ptr, std::ptrdiff_t length) GSL_NOEXCEPT
         {
-            return narrow_cast<std::ptrdiff_t>(wcsnlen(ptr, narrow_cast<size_t>(length)));
+            return details::wstring_length(ptr, length);
         }
     };
 
@@ -243,7 +275,7 @@ namespace details
     {
         std::ptrdiff_t operator()(const char* const ptr, std::ptrdiff_t length) GSL_NOEXCEPT
         {
-            return narrow_cast<std::ptrdiff_t>(strnlen(ptr, narrow_cast<size_t>(length)));
+            return details::string_length(ptr, length);
         }
     };
 
@@ -252,7 +284,7 @@ namespace details
     {
         std::ptrdiff_t operator()(const wchar_t* const ptr, std::ptrdiff_t length) GSL_NOEXCEPT
         {
-            return narrow_cast<std::ptrdiff_t>(wcsnlen(ptr, narrow_cast<size_t>(length)));
+            return details::wstring_length(ptr, length);
         }
     };
 }
@@ -344,7 +376,7 @@ public:
     // Container signature should work for basic_string after C++17 version exists
     template <class Traits, class Allocator>
     GSL_CONSTEXPR basic_string_span(std::basic_string<element_type, Traits, Allocator>& str)
-        : span_(&str[0], str.length())
+        : span_(&str[0], narrow_cast<std::ptrdiff_t>(str.length()))
     {
     }
 
@@ -536,6 +568,16 @@ inline std::wstring to_string(wstring_span<> view)
 
 #endif
 
+template <typename CharT,
+	  typename Traits = typename std::char_traits<CharT>,
+	  typename Allocator = std::allocator<CharT>,
+	  typename gCharT,
+	  std::ptrdiff_t Extent>
+std::basic_string<CharT, Traits, Allocator> to_basic_string(basic_string_span<gCharT, Extent> view)
+{
+  return {view.data(), static_cast<size_t>(view.length())};
+}
+  
 // zero-terminated string span, used to convert
 // zero-terminated spans to legacy strings
 template <typename CharT, std::ptrdiff_t Extent = dynamic_extent>
@@ -590,7 +632,8 @@ public:
 
     GSL_CONSTEXPR string_span_type as_string_span() const GSL_NOEXCEPT
     {
-        return span_.first(span_.size() - 1);
+        auto sz = span_.size();
+        return span_.first(sz <= 0 ? 0 : sz - 1);
     }
 
     GSL_CONSTEXPR string_span_type ensure_z() const GSL_NOEXCEPT { return gsl::ensure_z(span_); }
@@ -717,7 +760,7 @@ typename boost::enable_if_c<
 #if ! defined BOOST_NO_CXX11_DECLTYPE
         &&
         boost::is_same<typename boost::decay<decltype(boost::declval<T>().size(), *boost::declval<T>().data())>::type,
-                     typename T::value_type>::value>
+                     typename T::value_type>::value
 #endif
 ,
 bool >::type operator<(gsl::basic_string_span<CharT, Extent> one, const T& other) GSL_NOEXCEPT

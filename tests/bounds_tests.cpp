@@ -40,7 +40,7 @@ SUITE(bounds_test)
 			     j++)
 			{
 				use(j);
-				use(point[j]);
+				use(point[static_cast<size_t>(j)]);
 			}
 		}
 	}
