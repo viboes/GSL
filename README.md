@@ -1,7 +1,7 @@
 GSL: Guideline Support Library 
 =================================
 
-# viboes/GSL fork - c++11/C++14+C++1z branch
+# viboes/GSL - Microsoft/GSL fork supporting C++11/C++14/C++1z compilers
 
 This is the C++11 fork of the GSL LIbrary, to make it compile for C++11 compilers.
 
@@ -75,7 +75,7 @@ OS        | Compiler   | Versions | Status | Language version |
 ---------:|:-----------|:---------|--------|------------------|
 Windows   | Clang/LLVM | ?        |&#10003;| ?                |
 &nbsp;    | GCC        | ?        |&#10003;| ?                |
-&nbsp;    | Visual C++<br>(Visual Studio)| 6 (6) via header [gsl-lite-vc6.h](include/gsl/gsl-lite-vc6.h)<br>8 (2005), 10 (2010), 11 (2012),<br>12 (2013), 14 (2015) |?| ? |
+&nbsp;    | Visual C++<br>(Visual Studio)| 8 (2005), 10 (2010), 11 (2012),<br>12 (2013), 14 (2015) |?| ? |
 GNU/Linux | Clang/LLVM | 3.4      | ? | ? | 
 &nbsp;    | GCC        | 5.1      | ? | ? |
 OS X      | Clang/LLVM | 3.7.0    |&#10003;| -std=c++11 -std=c++14 -std=c++1z |
