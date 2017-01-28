@@ -145,15 +145,15 @@ namespace details
     template <class Span, bool IsConst>
     class span_iterator
     {
+        using element_type_ = typename Span::element_type;
     public:
         using iterator_category = std::random_access_iterator_tag;
-        using value_type =
-            stdex::conditional_t<IsConst, stdex::add_const_t<typename Span::element_type>,
-                               typename Span::element_type>;
+        using value_type = stdex::remove_const_t<element_type_>;
         using difference_type = typename Span::index_type;
 
-        using pointer = stdex::add_pointer_t<value_type>;
-        using reference = stdex::add_lvalue_reference_t<value_type>;
+        using reference =
+            stdex::conditional_t<IsConst, const element_type_, element_type_> &;
+        using pointer = stdex::add_pointer_t<reference>;
 
         constexpr span_iterator() noexcept : span_iterator(nullptr, 0) {}
 
@@ -314,7 +314,7 @@ namespace details
         constexpr extent_type() noexcept {}
 
         template <index_type Other>
-        GSL_CONTRACT_CONSTEXPR extent_type(extent_type<Other> ext) noexcept
+        GSL_CONTRACT_CONSTEXPR extent_type(extent_type<Other> ext)
         {
             static_assert(Other == Ext || Other == dynamic_extent,
                           "Mismatch between fixed-size extent and size of initializing data.");
@@ -365,6 +365,10 @@ public:
     constexpr static const index_type extent = Extent;
 
     // [span.cons], span constructors, copy, assignment, and destructor
+    template <bool Dependent = false,
+        // "Dependent" is needed to make "std::enable_if_t<Dependent || Extent <= 0>" SFINAE,
+        // since "std::enable_if_t<Extent <= 0>" is ill-formed when Extent is greater than 0.
+        class = stdex::enable_if_t<(Dependent || Extent <= 0)>>
     constexpr span() noexcept : storage_(nullptr, details::extent_type<0>()) {}
 
     constexpr span(std::nullptr_t) noexcept : span() {}

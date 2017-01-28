@@ -1565,6 +1565,13 @@ SUITE(span_tests)
         span<int> s{arr};
         CHECK(at(s,0) == 1 && at(s,1) == 2);
     }
+
+    TEST(default_constructible)
+    {
+        CHECK((std::is_default_constructible<span<int>>::value));
+        CHECK((std::is_default_constructible<span<int, 0>>::value));
+        CHECK((!std::is_default_constructible<span<int, 42>>::value));
+    }
 }
 
 int main(int, const char* []) { return UnitTest::RunAllTests(); }
