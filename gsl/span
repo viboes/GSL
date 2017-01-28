@@ -185,15 +185,14 @@ namespace details
     template <class Span, bool IsConst>
     class span_iterator
     {
+        typedef typename Span::element_type element_type_;
     public:
-        typedef std::random_access_iterator_tag iterator_category ;
-        typedef  
-            typename boost::conditional<IsConst, typename boost::add_const<typename Span::element_type>::type,
-                               typename Span::element_type>::type value_type;
         typedef typename Span::index_type difference_type;
+        typedef std::random_access_iterator_tag iterator_category;
+        typedef typename boost::remove_const<element_type_>::type value_type;
 
-        typedef typename boost::add_pointer<value_type>::type pointer;
-        typedef typename boost::add_lvalue_reference<value_type>::type reference;
+        typedef typename boost::conditional<IsConst, const element_type_, element_type_>::type & reference;
+        typedef typename boost::add_pointer<reference>::type pointer;
 
         GSL_CONSTEXPR span_iterator() GSL_NOEXCEPT
             : span_(NULLPTR), index_(0) {}
@@ -353,7 +352,7 @@ namespace details
         GSL_CONSTEXPR extent_type() GSL_NOEXCEPT {}
 
         template <index_type Other>
-        GSL_CONTRACT_CONSTEXPR extent_type(extent_type<Other> ext) GSL_NOEXCEPT
+        GSL_CONTRACT_CONSTEXPR extent_type(extent_type<Other> ext)
         {
             BOOST_STATIC_ASSERT_MSG(Other == Ext || Other == dynamic_extent,
                           "Mismatch between fixed-size extent and size of initializing data.");
@@ -405,7 +404,15 @@ public:
     GSL_CONSTEXPR static const index_type extent = Extent;
 
     // [span.cons], span constructors, copy, assignment, and destructor
+#if __cplusplus >= 201102L   
+    template <bool Dependent = false,
+        // "Dependent" is needed to make "std::enable_if_t<Dependent || Extent <= 0>" SFINAE,
+        // since "std::enable_if_t<Extent <= 0>" is ill-formed when Extent is greater than 0.
+        class = boost::enable_if_c<(Dependent || Extent <= 0)> >
     GSL_CONSTEXPR span() GSL_NOEXCEPT : storage_(NULLPTR, details::extent_type<0>()) {}
+#else
+    GSL_CONSTEXPR span() GSL_NOEXCEPT : storage_(NULLPTR, details::extent_type<0>()) {}
+#endif    
 
     GSL_CONSTEXPR span(stdex::nullptr_t) GSL_NOEXCEPT : storage_(NULLPTR, details::extent_type<0>()) {}
     GSL_CONSTEXPR span(pointer ptr, index_type count) : storage_(ptr, count) {}

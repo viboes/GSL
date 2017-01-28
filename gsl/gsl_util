@@ -96,7 +96,7 @@ inline final_act<F> finally(BOOST_FWD_REF(F) f) GSL_NOEXCEPT
 }
 
 // narrow_cast(): a searchable way to do narrowing casts of values
-#if _MSC_VER <= 1800
+#if defined(_MSC_VER) && _MSC_VER <= 1800
 template <class T, class U>
 inline GSL_CONSTEXPR T narrow_cast(U u) GSL_NOEXCEPT
 {
@@ -104,9 +104,9 @@ inline GSL_CONSTEXPR T narrow_cast(U u) GSL_NOEXCEPT
 }
 #else
 template <class T, class U>
-inline constexpr T narrow_cast(U&& u) noexcept
+inline GSL_CONSTEXPR T narrow_cast(BOOST_FWD_REF(U) u) GSL_NOEXCEPT
 {
-    return static_cast<T>(std::forward<U>(u));
+    return static_cast<T>(boost::forward<U>(u));
 }
 #endif
 

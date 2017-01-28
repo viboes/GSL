@@ -1673,6 +1673,14 @@ SUITE(span_tests)
         span<int> s(arr);
         CHECK(at(s,0) == 1 && at(s,1) == 2);
     }
+#if __cplusplus >= 201102L
 
+    TEST(default_constructible)
+    {
+        CHECK((boost::is_default_constructible<span<int> >::value));
+        CHECK((boost::is_default_constructible<span<int, 0> >::value));
+        CHECK((!boost::is_default_constructible<span<int, 42> >::value));
+    }
+#endif
 }
 int main(int, const char* []) { return UnitTest::RunAllTests(); }
