@@ -19,6 +19,8 @@
 #ifndef GSL_STRING_SPAN_H
 #define GSL_STRING_SPAN_H
 
+#if __cplusplus >= 201102L
+
 #include "gsl_config.hpp"
 
 #include "gsl_assert"
@@ -128,7 +130,7 @@ namespace details
 {
     inline std::ptrdiff_t string_length(const char *str, std::ptrdiff_t n)
     {
-        if (str == nullptr || n <= 0)
+        if (str == NULLPTR || n <= 0)
             return 0;
 
         span<const char> str_span(str, n);
@@ -142,7 +144,7 @@ namespace details
 
     inline std::ptrdiff_t wstring_length(const wchar_t *str, std::ptrdiff_t n)
     {
-        if (str == nullptr || n <= 0)
+        if (str == NULLPTR || n <= 0)
             return 0;
 
         span<const wchar_t> str_span(str, n);
@@ -188,7 +190,7 @@ inline span<T, dynamic_extent> ensure_z(T* const& sz, std::ptrdiff_t max = PTRDI
 // overloads to share an implementation
 inline span<char, dynamic_extent> ensure_z(char* const& sz, std::ptrdiff_t max)
 {
-    auto len = details::string_length(sz, max);
+    std::size_t len = details::string_length(sz, max);
     Ensures(sz[len] == 0);
     return span<char, dynamic_extent>(sz, len);
 }
@@ -336,7 +338,7 @@ public:
     }
     )
 
-    // from nullptr
+    // from NULLPTR
     GSL_CONSTEXPR basic_string_span(stdex::nullptr_t ptr) GSL_NOEXCEPT : span_(ptr) {}
 
     GSL_CONSTEXPR basic_string_span(pointer ptr, index_type length) : span_(ptr, length) {}
@@ -1000,4 +1002,7 @@ bool>::type operator>=(const T& one, gsl::basic_string_span<CharT, Extent> other
 #endif
 
 #endif // GSL_THROW_ON_CONTRACT_VIOLATION
+
+#endif
+
 #endif // GSL_STRING_SPAN_H

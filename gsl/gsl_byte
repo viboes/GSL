@@ -143,7 +143,7 @@ inline GSL_CONSTEXPR byte to_byte_impl<true, unsigned char>(unsigned char t) GSL
 template<typename T>
 inline GSL_CONSTEXPR byte to_byte(T t) GSL_NOEXCEPT
 {
-     return to_byte_impl<std::is_same<T, unsigned char>::value, T>(t);
+     return to_byte_impl<boost::is_same<T, unsigned char>::value, T>(t);
 }
 
 template <int I>

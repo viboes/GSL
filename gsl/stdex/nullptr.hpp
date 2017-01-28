@@ -20,29 +20,50 @@
 #ifndef STDEX_NULLPTR_H
 #define STDEX_NULLPTR_H
 
+#define GSL_NULLPTR_IS_A_STRONG_TYPE
+
 #include <cstddef>
+#if __cplusplus <= 199711L
+#include <boost/smart_ptr/shared_ptr.hpp>
+#endif
+
 
 #if __cplusplus <= 199711L
 namespace stdex {
   template <class T>
   T* make_nullptr()
   { return reinterpret_cast<T*>(0); }
-
-#if defined GSS_NULLPTR_IS_A_STRONG_TYPE
+}
+#if defined GSL_NULLPTR_IS_A_STRONG_TYPE
+namespace stdex {
     struct nullptr_t {
         nullptr_t() {}
         template <class T>
+        operator boost::shared_ptr<T>() const { return boost::shared_ptr<T>((T*)0); }
+        template <class T>
         operator T*() const { return 0; }
     };
-#else
-    typedef void* nullptr_t;
-#endif
+
+    template <class T>
+    bool operator==(boost::shared_ptr<T> const& ptr, nullptr_t)  { return ! ptr; }
+    template <class T>
+    bool operator==(nullptr_t, boost::shared_ptr<T> const& ptr)  { return ! ptr; }
+    template <class T>
+    bool operator!=(boost::shared_ptr<T> const& ptr, nullptr_t)  { return ptr; }
+    template <class T>
+    bool operator!=(nullptr_t, boost::shared_ptr<T> const& ptr)  { return ptr; }
 
 }
-#if defined GSS_NULLPTR_IS_A_STRONG_TYPE
 const stdex::nullptr_t NULLPTR;
-#endif
+
+#else
+namespace stdex {
+    typedef void* nullptr_t;
+}
 #define  NULLPTR 0
+#endif
+
+
 
 #else
 
@@ -53,4 +74,4 @@ namespace stdex {
 #endif
 
 
-#endif // STDEX_ITERATOR_H
+#endif // STDEX_NULLPTR_H

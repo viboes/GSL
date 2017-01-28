@@ -22,7 +22,8 @@
 #include "span"
 #include <algorithm>
 #include <boost/type_traits.hpp>
-#include "boost/static_assert.hpp"
+#include <boost/static_assert.hpp>
+#include <gsl/stdex/algorithm.hpp>
 
 #ifdef _MSC_VER
 
@@ -52,7 +53,7 @@ void copy(span<SrcElementType, SrcExtent> src, span<DestElementType, DestExtent>
                   "Source range is longer than target range");
 
     Expects(dest.size() >= src.size());
-    std::copy_n(src.data(), src.size(), dest.data());
+    stdex::copy_n(src.data(), src.size(), dest.data());
 }
 
 } // namespace gsl

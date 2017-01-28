@@ -20,6 +20,7 @@
 #define GSL_GSL_H
 
 #include "gsl_config.hpp"
+#include <gsl/stdex/nullptr.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/static_assert.hpp>
 #include "stdex/type_traits.hpp"
@@ -101,7 +102,7 @@ class not_null
 // fixme: Why it is not assignable?
     BOOST_STATIC_ASSERT_MSG((boost::is_assignable<T&, stdex::nullptr_t>::value), "T cannot be assigned nullptr.");
 #else
-#if defined GSS_NULLPTR_IS_A_STRONG_TYPE
+#if defined GSL_NULLPTR_IS_A_STRONG_TYPE
     BOOST_STATIC_ASSERT_MSG((boost::is_convertible<stdex::nullptr_t, T>::value), "nullptr_t cannot be converted to T.");
 #endif
 #endif
