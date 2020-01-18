@@ -353,6 +353,7 @@ class span
 public:
     // constants and types
     using element_type = ElementType;
+    using value_type = typename std::remove_cv<ElementType>::type;
     using index_type = std::ptrdiff_t;
     using pointer = element_type*;
     using reference = element_type&;
